@@ -25,7 +25,6 @@ interface RankedList {
 export default function RankingsPage() {
   const router = useRouter()
   const [rankings, setRankings] = useState<RankedList[]>([])
-  const [drafts, setDrafts] = useState<RankedList[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
@@ -49,14 +48,6 @@ export default function RankingsPage() {
         }
         const rankingsData = await rankingsResponse.json()
         setRankings(rankingsData.lists || [])
-
-        // Fetch drafts
-        const draftsResponse = await fetch('/api/ranked-lists/draft')
-        if (!draftsResponse.ok) {
-          throw new Error('Failed to fetch drafts')
-        }
-        const draftsData = await draftsResponse.json()
-        setDrafts(draftsData.drafts || [])
       } catch (err: any) {
         console.error('Error fetching rankings:', err)
         setError(err.message || 'Failed to load rankings')
@@ -82,9 +73,7 @@ export default function RankingsPage() {
         throw new Error('Failed to delete ranking')
       }
 
-      // Remove from local state (both rankings and drafts)
       setRankings(rankings.filter((r) => r.id !== id))
-      setDrafts(drafts.filter((d) => d.id !== id))
     } catch (err: any) {
       console.error('Error deleting ranking:', err)
       alert('Failed to delete ranking. Please try again.')
@@ -146,69 +135,8 @@ export default function RankingsPage() {
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">View and manage your saved song rankings</p>
         </div>
 
-        {/* Drafts Section - Compact */}
-        {drafts.length > 0 && (
-          <div className="mb-6">
-            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-xl p-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-md text-xs font-semibold flex-shrink-0">
-                    Draft{drafts.length > 1 ? 's' : ''}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
-                      {drafts.length === 1
-                        ? (drafts[0].name || `Draft with ${drafts[0].song_count} songs`)
-                        : `${drafts.length} saved drafts`}
-                    </p>
-                    {drafts.length === 1 && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {drafts[0].song_count} songs • Last updated {new Date(drafts[0].updated_at || drafts[0].created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {drafts.length === 1 ? (
-                    <>
-                      <button
-                        onClick={() => router.push(`/songs?resume=${drafts[0].id}`)}
-                        className="px-3 py-1.5 bg-gradient-to-r from-[#4a5d3a] to-[#6b7d5a] hover:from-[#5a6d4a] hover:to-[#7b8d6a] text-white text-sm font-medium rounded-lg transition-all"
-                      >
-                        Resume
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault()
-                          handleDelete(drafts[0].id)
-                        }}
-                        className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
-                        aria-label="Delete draft"
-                      >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        // Show all drafts in a dropdown or modal, or just resume the most recent
-                        router.push(`/songs?resume=${drafts[0].id}`)
-                      }}
-                      className="px-3 py-1.5 bg-gradient-to-r from-[#4a5d3a] to-[#6b7d5a] hover:from-[#5a6d4a] hover:to-[#7b8d6a] text-white text-sm font-medium rounded-lg transition-all"
-                    >
-                      View All
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Completed Rankings Section */}
-        {rankings.length === 0 && drafts.length === 0 ? (
+        {/* Rankings Section */}
+        {rankings.length === 0 ? (
           <div className="text-center py-16">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-[#6b7d5a] to-[#4a5d3a] rounded-full mb-6 shadow-lg">
               <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -220,7 +148,7 @@ export default function RankingsPage() {
               Start ranking your favorite songs to see them here!
             </p>
             <Link
-              href="/songs"
+              href="/rank"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#4a5d3a] to-[#6b7d5a] hover:from-[#5a6d4a] hover:to-[#7b8d6a] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,11 +157,8 @@ export default function RankingsPage() {
               Create Your First Ranking
             </Link>
           </div>
-        ) : rankings.length > 0 ? (
+        ) : (
           <>
-            {drafts.length > 0 && (
-              <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-slate-100">Completed Rankings</h2>
-            )}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {rankings.map((ranking) => {
                 const date = new Date(ranking.created_at)
@@ -369,7 +294,7 @@ export default function RankingsPage() {
               })}
             </div>
           </>
-        ) : null}
+        )}
       </div>
     </main>
   )

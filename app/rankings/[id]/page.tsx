@@ -261,16 +261,10 @@ export default function RankingDetailPage() {
     }
   }
 
-  const handleUseAsTemplate = () => {
+  const handleReRank = () => {
     if (!ranking) return
-    // Navigate to songs page with template parameter
-    router.push(`/songs?template=${rankingId}`)
-  }
-
-  const handleAddMoreSongs = () => {
-    if (!ranking) return
-    // Navigate to songs page with extend parameter
-    router.push(`/songs?extend=${rankingId}`)
+    // Navigate to re-rank page with the ranking ID
+    router.push(`/rank/rerank/${rankingId}`)
   }
 
   const handleToggleVisibility = async () => {
@@ -453,8 +447,8 @@ export default function RankingDetailPage() {
                       onClick={handleToggleVisibility}
                       disabled={isTogglingVisibility}
                       className={`flex items-center gap-1.5 md:gap-2 px-2.5 md:px-4 py-2.5 text-sm font-semibold transition-all rounded-xl shadow-sm hover:shadow-md border disabled:opacity-50 disabled:cursor-not-allowed ${ranking?.is_public
-                          ? 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30'
-                          : 'text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600'
+                        ? 'text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30'
+                        : 'text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-600 hover:bg-slate-200 dark:hover:bg-slate-600'
                         }`}
                       title={ranking?.is_public ? 'Make private' : 'Make public'}
                     >
@@ -577,34 +571,19 @@ export default function RankingDetailPage() {
                             <span>{isGeneratingImage ? 'Downloading...' : 'Download'}</span>
                           </button>
                         )}
-                        {/* Add More Songs - Only available to ranking owner */}
-                        {ranking && currentUserId && currentUserId === ranking.user_id && (
-                          <button
-                            onClick={() => {
-                              handleAddMoreSongs()
-                              setShowMoreMenu(false)
-                            }}
-                            className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-[#4a5d3a] dark:text-[#6b7d5a] hover:bg-[#e8f0e0] dark:hover:bg-[#2a3d1a]/30 transition-colors"
-                          >
-                            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            Add More Songs
-                          </button>
-                        )}
-                        {/* Use as Template - Available for all public rankings */}
+                        {/* Re-Rank These Songs - Available for all public rankings */}
                         {ranking && ranking.is_public && (
                           <button
                             onClick={() => {
-                              handleUseAsTemplate()
+                              handleReRank()
                               setShowMoreMenu(false)
                             }}
                             className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm font-semibold text-[#4a5d3a] dark:text-[#6b7d5a] hover:bg-[#e8f0e0] dark:hover:bg-[#2a3d1a]/30 transition-colors"
                           >
                             <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
-                            Use as Template
+                            Re-Rank These Songs
                           </button>
                         )}
                         {/* Compare - Only available when viewing someone else's ranking */}
@@ -726,10 +705,10 @@ export default function RankingDetailPage() {
               onDragOver={(e) => handleDragOver(e, index)}
               onDragEnd={handleDragEnd}
               className={`group flex items-center gap-3 md:gap-4 p-3 md:p-4 bg-white dark:bg-slate-800 rounded-2xl border-2 transition-all ${isEditing
-                  ? draggedIndex === index
-                    ? 'border-[#c97d4a] dark:border-[#d98d5a] shadow-2xl scale-[1.02] cursor-grabbing'
-                    : 'border-slate-200 dark:border-slate-700 hover:border-[#6b7d5a] dark:hover:border-[#6b7d5a] cursor-grab shadow-lg hover:shadow-xl'
-                  : 'border-slate-200 dark:border-slate-700 hover:border-[#6b7d5a] dark:hover:border-[#6b7d5a] shadow-lg hover:shadow-xl card-hover'
+                ? draggedIndex === index
+                  ? 'border-[#c97d4a] dark:border-[#d98d5a] shadow-2xl scale-[1.02] cursor-grabbing'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-[#6b7d5a] dark:hover:border-[#6b7d5a] cursor-grab shadow-lg hover:shadow-xl'
+                : 'border-slate-200 dark:border-slate-700 hover:border-[#6b7d5a] dark:hover:border-[#6b7d5a] shadow-lg hover:shadow-xl card-hover'
                 }`}
             >
               <div className="flex items-center gap-3 flex-shrink-0">

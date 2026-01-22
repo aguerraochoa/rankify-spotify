@@ -128,7 +128,7 @@ export default function CompareSelectionPage() {
               You need at least one ranking to compare
             </p>
             <Link
-              href="/songs"
+              href="/rank"
               className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#4a5d3a] to-[#6b7d5a] hover:from-[#5a6d4a] hover:to-[#7b8d6a] text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
