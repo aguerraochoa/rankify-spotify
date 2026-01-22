@@ -51,7 +51,7 @@ export default function LoginPage() {
       provider: 'spotify',
       options: {
         redirectTo: callbackUrl.toString(),
-        scopes: 'user-read-email user-read-private playlist-read-private playlist-read-collaborative user-library-read',
+        scopes: 'user-read-email user-read-private playlist-read-private playlist-read-collaborative user-library-read playlist-modify-public playlist-modify-private',
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',
@@ -66,30 +66,38 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-8 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8 bg-[#fffdf5]">
       <div className="w-full max-w-md space-y-8">
+        {/* Logo and Title */}
         <div className="text-center">
-          <h1 className="text-5xl font-bold mb-3 bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent">
+          <div className="inline-block bg-[#ff90e8] border-4 border-black p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-6 transform -rotate-2">
+            <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+            </svg>
+          </div>
+          <h1 className="text-5xl md:text-6xl font-black uppercase mb-3">
             Rankify
           </h1>
-          <p className="text-slate-400 text-lg">
+          <p className="text-lg font-bold text-gray-700">
             Rank your favorite playlists and albums
           </p>
         </div>
 
-        <div className="mt-10 space-y-6">
+        {/* Login Card */}
+        <div className="nb-card p-6 md:p-8 space-y-6">
+          <div className="nb-tag transform -rotate-1 mb-4">
+            LOGIN_REQUIRED
+          </div>
+
           {/* Spotify Login Button */}
           <button
             onClick={handleSpotifyLogin}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-[#1DB954] hover:bg-[#1ed760] text-white rounded-full font-semibold text-lg shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-[#1DB954] border-4 border-black text-white font-black text-lg uppercase shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {loading ? (
               <>
-                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+                <div className="w-6 h-6 border-3 border-white border-t-transparent animate-spin"></div>
                 <span>Connecting...</span>
               </>
             ) : (
@@ -103,33 +111,33 @@ export default function LoginPage() {
           </button>
 
           {message && (
-            <div className="p-4 rounded-lg text-sm bg-red-500/20 text-red-400 border border-red-500/30">
+            <div className="p-4 bg-[#ff6b6b] border-2 border-black text-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               {message}
             </div>
           )}
 
-          <p className="text-xs text-center text-slate-500">
+          <p className="text-xs text-center font-bold text-gray-600">
             By signing in, you agree to Rankify&apos;s terms of service
           </p>
         </div>
 
         {/* Feature highlights */}
-        <div className="mt-12 grid grid-cols-2 gap-4 text-center">
-          <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+        <div className="grid grid-cols-2 gap-3 md:gap-4">
+          <div className="nb-card-sm p-4 text-center">
             <div className="text-2xl mb-2">🎵</div>
-            <p className="text-sm text-slate-400">Rank your playlists</p>
+            <p className="text-sm font-bold">Rank Playlists</p>
           </div>
-          <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+          <div className="nb-card-sm p-4 text-center">
             <div className="text-2xl mb-2">💿</div>
-            <p className="text-sm text-slate-400">Rank any album</p>
+            <p className="text-sm font-bold">Rank Albums</p>
           </div>
-          <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+          <div className="nb-card-sm p-4 text-center">
             <div className="text-2xl mb-2">📊</div>
-            <p className="text-sm text-slate-400">Save your rankings</p>
+            <p className="text-sm font-bold">Save Rankings</p>
           </div>
-          <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+          <div className="nb-card-sm p-4 text-center">
             <div className="text-2xl mb-2">📤</div>
-            <p className="text-sm text-slate-400">Share with friends</p>
+            <p className="text-sm font-bold">Share Results</p>
           </div>
         </div>
       </div>

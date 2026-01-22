@@ -10,17 +10,29 @@ export default function GlobalError({
   return (
     <html>
       <body>
-        <div className="flex min-h-screen flex-col items-center justify-center p-8 bg-[#f5f1e8] dark:bg-slate-950">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Something went wrong!</h2>
-            <p className="text-gray-600 mb-4">
-              {error.message || 'An unexpected error occurred'}
+        <div className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8 bg-[#fffdf5]">
+          <div style={{ background: 'white', border: '4px solid black', boxShadow: '8px 8px 0px 0px rgba(0,0,0,1)' }} className="p-8 md:p-12 text-center max-w-md">
+            <div style={{ width: '80px', height: '80px', background: '#ff6b6b', border: '4px solid black', boxShadow: '4px 4px 0px 0px rgba(0,0,0,1)' }} className="flex items-center justify-center mx-auto mb-6">
+              <span style={{ fontSize: '2.5rem', fontWeight: 900 }}>!</span>
+            </div>
+            <h2 style={{ fontSize: '2rem', fontWeight: 900, textTransform: 'uppercase', marginBottom: '1rem' }}>Critical Error!</h2>
+            <p style={{ fontWeight: 700, color: '#4b5563', marginBottom: '1.5rem' }}>
+              {error.message || 'A critical error occurred'}
             </p>
             <button
               onClick={() => reset()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              style={{
+                width: '100%',
+                padding: '1rem',
+                background: '#ff90e8',
+                border: '2px solid black',
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                boxShadow: '4px 4px 0px 0px rgba(0,0,0,1)',
+                cursor: 'pointer'
+              }}
             >
-              Try again
+              Try Again
             </button>
           </div>
         </div>
@@ -28,4 +40,3 @@ export default function GlobalError({
     </html>
   )
 }
-

@@ -2,132 +2,211 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   NEUBRUTALISM DESIGN SYSTEM
+   ============================================ */
+
 :root {
-  /* New color palette from image */
-  --color-beige: #f5f1e8; 
-  --color-green-light: #6b7d5a;
-  --color-green-dark: #4a5d3a;
-  --color-orange: #c97d4a;
-  
-  --background: #0f172a; /* matches slate-900 */
-  --foreground: #f8fafc; /* matches slate-50 */
-  --card: #1e293b;
-  --card-foreground: #f8fafc;
-  --primary: #22c55e;
-  --primary-foreground: #ffffff;
-  --secondary: #64748b;
-  --secondary-foreground: #ffffff;
-  --muted: #1e293b;
-  --muted-foreground: #94a3b8;
-  --accent: #22c55e;
-  --accent-foreground: #ffffff;
-  --border: #334155;
-  --input: #334155;
-  --ring: #22c55e;
+  /* Core Colors */
+  --nb-bg: #fffdf5;
+  --nb-card: #ffffff;
+  --nb-border: #000000;
+  --nb-text: #000000;
+
+  /* Accent Colors */
+  --nb-pink: #ff90e8;
+  --nb-pink-hover: #ff70d8;
+  --nb-yellow: #ffd700;
+  --nb-cyan: #00d4ff;
+  --nb-red: #ff6b6b;
+  --nb-blue: #4d9fff;
+  --nb-green: #4ade80;
+
+  /* Shadows */
+  --nb-shadow: 8px 8px 0px 0px rgba(0, 0, 0, 1);
+  --nb-shadow-sm: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  --nb-shadow-hover: 4px 4px 0px 0px rgba(0, 0, 0, 1);
 }
 
-/* Remove forced prefers-color-scheme to keep app consistent as Dark */
-
 html {
-  background: var(--background);
-  color-scheme: dark;
+  background: var(--nb-bg);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--nb-text);
+  background: var(--nb-bg);
   min-height: 100vh;
   margin: 0;
-
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 @layer utilities {
+
+  /* ============================================
+     NEUBRUTALISM CARD STYLES
+     ============================================ */
+  .nb-card {
+    background: var(--nb-card);
+    border: 4px solid var(--nb-border);
+    box-shadow: var(--nb-shadow);
+    transition: all 0.15s ease;
+  }
+
+  .nb-card:hover {
+    transform: translate(2px, 2px);
+    box-shadow: var(--nb-shadow-hover);
+  }
+
+  .nb-card-sm {
+    background: var(--nb-card);
+    border: 2px solid var(--nb-border);
+    box-shadow: var(--nb-shadow-sm);
+    transition: all 0.15s ease;
+  }
+
+  .nb-card-sm:hover {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+  }
+
+  /* ============================================
+     NEUBRUTALISM BUTTON STYLES
+     ============================================ */
+  .nb-button {
+    background: var(--nb-pink);
+    border: 2px solid var(--nb-border);
+    color: var(--nb-text);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: var(--nb-shadow-sm);
+    transition: all 0.15s ease;
+  }
+
+  .nb-button:hover {
+    background: var(--nb-pink-hover);
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+  }
+
+  .nb-button-yellow {
+    background: var(--nb-yellow);
+  }
+
+  .nb-button-yellow:hover {
+    background: #ffcc00;
+  }
+
+  .nb-button-cyan {
+    background: var(--nb-cyan);
+  }
+
+  .nb-button-cyan:hover {
+    background: #00c4ef;
+  }
+
+  .nb-button-outline {
+    background: var(--nb-card);
+    border: 2px solid var(--nb-border);
+    color: var(--nb-text);
+    font-weight: 900;
+    text-transform: uppercase;
+    box-shadow: var(--nb-shadow-sm);
+    transition: all 0.15s ease;
+  }
+
+  .nb-button-outline:hover {
+    background: var(--nb-yellow);
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+  }
+
+  /* ============================================
+     NEUBRUTALISM INPUT STYLES
+     ============================================ */
+  .nb-input {
+    background: var(--nb-card);
+    border: 2px solid var(--nb-border);
+    color: var(--nb-text);
+    font-family: inherit;
+  }
+
+  .nb-input:focus {
+    outline: none;
+    box-shadow: var(--nb-shadow-sm);
+  }
+
+  /* ============================================
+     NEUBRUTALISM TAG/BADGE STYLES
+     ============================================ */
+  .nb-tag {
+    display: inline-block;
+    background: var(--nb-yellow);
+    border: 2px solid var(--nb-border);
+    padding: 0.25rem 0.75rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+  }
+
+  .nb-tag-pink {
+    background: var(--nb-pink);
+  }
+
+  .nb-tag-cyan {
+    background: var(--nb-cyan);
+  }
+
+  .nb-tag-green {
+    background: var(--nb-green);
+  }
+
+  /* ============================================
+     TYPOGRAPHY UTILITIES
+     ============================================ */
+  .nb-heading {
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+  }
+
   .text-balance {
     text-wrap: balance;
   }
-  
-  /* Smooth transitions */
-  .transition-smooth {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  /* Glass morphism effect */
-  .glass {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-  }
-  
-  @media (prefers-color-scheme: dark) {
-    .glass {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+
+  /* ============================================
+     MOBILE RESPONSIVE SHADOWS
+     ============================================ */
+  @media (max-width: 640px) {
+    .nb-card {
+      box-shadow: var(--nb-shadow-sm);
+    }
+
+    .nb-card:hover {
+      box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
     }
   }
-  
-  /* Gradient backgrounds - using new color palette */
-  .gradient-primary {
-    background: linear-gradient(135deg, #4a5d3a 0%, #6b7d5a 100%);
-  }
-  
-  .gradient-success {
-    background: linear-gradient(135deg, #6b7d5a 0%, #4a5d3a 100%);
-  }
-  
-  .gradient-danger {
-    background: linear-gradient(135deg, #c97d4a 0%, #b86a3a 100%);
-  }
-  
-  .gradient-accent {
-    background: linear-gradient(135deg, #6b7d5a 0%, #c97d4a 100%);
-  }
-  
-  /* Card hover effects */
-  .card-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  .card-hover:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  }
-  
-  @media (prefers-color-scheme: dark) {
-    .card-hover:hover {
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-    }
-  }
-  
-  /* Custom Scrollbar */
+
+  /* ============================================
+     CUSTOM SCROLLBAR (Neubrutalism Style)
+     ============================================ */
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
   }
-  
+
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 10px;
+    background: var(--nb-bg);
+    border: 1px solid var(--nb-border);
   }
-  
+
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #4a5d3a 0%, #6b7d5a 100%);
-    border-radius: 10px;
+    background: var(--nb-border);
   }
-  
+
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #3a4d2a 0%, #5a6d4a 100%);
-  }
-  
-  @media (prefers-color-scheme: dark) {
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, #6b7d5a 0%, #8a9a7a 100%);
-    }
-    
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(135deg, #4a5d3a 0%, #6b7d5a 100%);
-    }
+    background: #333;
   }
 }
-

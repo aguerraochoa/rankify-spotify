@@ -27,7 +27,6 @@ export default function EditProfilePage() {
   const supabase = createClient()
 
   // Form state
-  const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [bio, setBio] = useState('')
 
@@ -50,7 +49,6 @@ export default function EditProfilePage() {
 
         const data = await response.json()
         setProfile(data.profile)
-        setUsername(data.profile.username || '')
         setDisplayName(data.profile.display_name || '')
         setBio(data.profile.bio || '')
       } catch (err: any) {
@@ -66,33 +64,12 @@ export default function EditProfilePage() {
     }
   }, [userId, router, supabase.auth])
 
-  const validateUsername = (value: string): string | null => {
-    if (value === '') return null // Empty is allowed (will be set to null)
-    if (value.length < 3) {
-      return 'Username must be at least 3 characters'
-    }
-    if (value.length > 30) {
-      return 'Username must be 30 characters or less'
-    }
-    if (!/^[a-zA-Z0-9_-]+$/.test(value)) {
-      return 'Username can only contain letters, numbers, underscores, and hyphens'
-    }
-    return null
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setSuccess(false)
     setSaving(true)
-
-    // Validate username
-    const usernameError = validateUsername(username)
-    if (usernameError) {
-      setError(usernameError)
-      setSaving(false)
-      return
-    }
 
     // Validate bio length
     if (bio.length > 160) {
@@ -101,6 +78,7 @@ export default function EditProfilePage() {
       return
     }
 
+
     try {
       const response = await fetch(`/api/users/${userId}`, {
         method: 'PUT',
@@ -108,7 +86,6 @@ export default function EditProfilePage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: username.trim() || null,
           display_name: displayName.trim() || null,
           bio: bio.trim() || null,
         }),
@@ -185,43 +162,15 @@ export default function EditProfilePage() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 md:p-8 space-y-6">
-          {/* Email (read-only) */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              value={profile?.email || ''}
-              disabled
-              className="w-full px-4 py-2 border-2 border-slate-300 dark:border-slate-600 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 cursor-not-allowed"
-            />
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Email cannot be changed here. Update it in your account settings.
-            </p>
-          </div>
-
-          {/* Username */}
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="your_username"
-              className="w-full px-4 py-2 border-2 border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#6b7d5a] focus:border-transparent"
-            />
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              3-30 characters, letters, numbers, underscores, and hyphens only. Leave empty to remove.
-            </p>
-            {username && validateUsername(username) && (
-              <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-                {validateUsername(username)}
-              </p>
-            )}
+          {/* Linked Spotify Account */}
+          <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <svg className="w-8 h-8 text-green-600 dark:text-green-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+            </svg>
+            <div>
+              <p className="font-semibold text-green-800 dark:text-green-300">Linked Spotify Account</p>
+              <p className="text-sm text-green-600 dark:text-green-400">{profile?.email || 'Connected via Spotify'}</p>
+            </div>
           </div>
 
           {/* Display Name */}
@@ -239,7 +188,7 @@ export default function EditProfilePage() {
               className="w-full px-4 py-2 border-2 border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#6b7d5a] focus:border-transparent"
             />
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Your public display name. Leave empty to remove.
+              Your public display name. Leave empty to use your Spotify name.
             </p>
           </div>
 
