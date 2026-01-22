@@ -52,6 +52,10 @@ export default function LoginPage() {
       options: {
         redirectTo: callbackUrl.toString(),
         scopes: 'user-read-email user-read-private playlist-read-private playlist-read-collaborative user-library-read',
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
       },
     })
 

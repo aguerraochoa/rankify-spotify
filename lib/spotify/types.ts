@@ -90,4 +90,6 @@ export interface SearchResult {
   coverArtUrl?: string;
   albumTitle?: string;
   albumId?: string;
+  previewUrl?: string | null;
+  spotifyUri?: string;
 }

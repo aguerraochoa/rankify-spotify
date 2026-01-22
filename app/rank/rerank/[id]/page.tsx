@@ -72,7 +72,7 @@ export default function ReRankPage({
                 if (shuffled.length > 0) {
                     setState({
                         rankedList: [shuffled[0]],
-                        unrankedList: shuffled.slice(1),
+                        unrankedList: shuffled.slice(2),
                         currentItem: shuffled[1] || null,
                         comparisonIndex: 0,
                         low: 0,
@@ -96,64 +96,66 @@ export default function ReRankPage({
 
     // Binary insertion logic
     const handleChoice = useCallback((preferCurrent: boolean) => {
-        if (!state || !state.currentItem) return
+        setState(prev => {
+            if (!prev || !prev.currentItem) return prev
 
-        const { rankedList, unrankedList, currentItem, low, high } = state
-        const mid = Math.floor((low + high) / 2)
+            const { rankedList, unrankedList, currentItem, low, high } = prev
+            const mid = Math.floor((low + high) / 2)
 
-        if (preferCurrent) {
-            // Current item is better, search upper half
-            if (mid === low) {
-                // Insert at this position
-                const newRanked = [...rankedList]
-                newRanked.splice(mid, 0, currentItem)
-                moveToNext(newRanked, unrankedList)
+            if (preferCurrent) {
+                // Current item is better, search upper half
+                if (mid === low) {
+                    // Insert at this position
+                    const newRanked = [...rankedList]
+                    newRanked.splice(mid, 0, currentItem)
+                    return computeMoveToNext(newRanked, unrankedList)
+                } else {
+                    return {
+                        ...prev,
+                        high: mid - 1,
+                        comparisonIndex: Math.floor((low + mid - 1) / 2),
+                    }
+                }
             } else {
-                setState({
-                    ...state,
-                    high: mid - 1,
-                    comparisonIndex: Math.floor((low + mid - 1) / 2),
-                })
+                // Comparison item is better, search lower half
+                if (mid === high) {
+                    // Insert after this position
+                    const newRanked = [...rankedList]
+                    newRanked.splice(mid + 1, 0, currentItem)
+                    return computeMoveToNext(newRanked, unrankedList)
+                } else {
+                    return {
+                        ...prev,
+                        low: mid + 1,
+                        comparisonIndex: Math.floor((mid + 1 + high) / 2),
+                    }
+                }
             }
-        } else {
-            // Comparison item is better, search lower half
-            if (mid === high) {
-                // Insert after this position
-                const newRanked = [...rankedList]
-                newRanked.splice(mid + 1, 0, currentItem)
-                moveToNext(newRanked, unrankedList)
-            } else {
-                setState({
-                    ...state,
-                    low: mid + 1,
-                    comparisonIndex: Math.floor((mid + 1 + high) / 2),
-                })
-            }
-        }
-    }, [state])
+        })
+    }, [])
 
-    const moveToNext = (newRanked: Song[], remaining: Song[]) => {
+    const computeMoveToNext = (newRanked: Song[], remaining: Song[]): RankingState => {
         if (remaining.length === 0) {
-            setState({
+            setIsComplete(true)
+            return {
                 rankedList: newRanked,
                 unrankedList: [],
                 currentItem: null,
                 comparisonIndex: 0,
                 low: 0,
                 high: 0,
-            })
-            setIsComplete(true)
+            }
         } else {
             const nextItem = remaining[0]
             const newUnranked = remaining.slice(1)
-            setState({
+            return {
                 rankedList: newRanked,
                 unrankedList: newUnranked,
                 currentItem: nextItem,
                 comparisonIndex: Math.floor((newRanked.length - 1) / 2),
                 low: 0,
                 high: newRanked.length - 1,
-            })
+            }
         }
     }
 
@@ -284,7 +286,23 @@ export default function ReRankPage({
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
-            <div className="max-w-4xl mx-auto pt-8">
+            <div className="max-w-4xl mx-auto pt-4">
+                {/* Header with exit button */}
+                <div className="flex items-center justify-between mb-6">
+                    <button
+                        onClick={() => router.back()}
+                        className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        <span>Exit</span>
+                    </button>
+                    <span className="text-sm text-slate-400">
+                        {state.rankedList.length} / {tracks.length} ranked
+                    </span>
+                </div>
+
                 {/* Progress bar */}
                 <div className="mb-8">
                     <div className="flex justify-between text-sm text-slate-400 mb-2">

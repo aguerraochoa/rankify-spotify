@@ -16,6 +16,14 @@ export class SpotifyClient {
         this.accessToken = accessToken;
     }
 
+    /**
+     * Update the access token
+     */
+    setAccessToken(token: string) {
+        this.accessToken = token;
+    }
+
+
     private async fetchSpotify<T>(endpoint: string): Promise<T> {
         const url = endpoint.startsWith('http') ? endpoint : `${SPOTIFY_BASE_URL}${endpoint}`;
         const response = await fetch(url, {
@@ -50,14 +58,16 @@ export class SpotifyClient {
 
         return data.items
             .filter(item => item.track !== null)
-            .map(item => ({
-                id: item.track.id,
+            .map((item, index) => ({
+                id: `${item.track.id}-${index}`,
                 title: item.track.name,
                 artist: item.track.artists.map(a => a.name).join(', '),
                 type: 'recording',
                 coverArtUrl: item.track.album.images[0]?.url,
                 albumTitle: item.track.album.name,
                 albumId: item.track.album.id,
+                previewUrl: item.track.preview_url,
+                spotifyUri: `spotify:track:${item.track.id}`,
             }));
     }
 
@@ -83,18 +93,27 @@ export class SpotifyClient {
      * Get album tracks
      */
     async getAlbumTracks(albumId: string): Promise<SearchResult[]> {
-        // We need the album details first to get the cover art
+        // Get album details for cover art
         const album = await this.fetchSpotify<SpotifyAlbum>(`/albums/${albumId}`);
-        const data = await this.fetchSpotify<SpotifyPaging<SpotifyTrack>>(`/albums/${albumId}/tracks?limit=50`);
+        // Get full track objects (not simplified) to get preview URLs
+        const trackIds = await this.fetchSpotify<SpotifyPaging<{ id: string }>>(`/albums/${albumId}/tracks?limit=50`);
 
-        return data.items.map(track => ({
-            id: track.id,
+        if (trackIds.items.length === 0) return [];
+
+        // Fetch full track details in batches of 50
+        const ids = trackIds.items.map(t => t.id).join(',');
+        const fullTracks = await this.fetchSpotify<{ tracks: SpotifyTrack[] }>(`/tracks?ids=${ids}`);
+
+        return fullTracks.tracks.map((track, index) => ({
+            id: `${track.id}-${index}`,
             title: track.name,
             artist: track.artists.map(a => a.name).join(', '),
             type: 'recording',
             coverArtUrl: album.images[0]?.url,
             albumTitle: album.name,
             albumId: album.id,
+            previewUrl: track.preview_url,
+            spotifyUri: `spotify:track:${track.id}`,
         }));
     }
 
@@ -113,5 +132,64 @@ export class SpotifyClient {
             type: 'release-group',
             coverArtUrl: item.album.images[0]?.url,
         }));
+    }
+
+    /**
+     * Get current user's Spotify ID
+     */
+    async getCurrentUserId(): Promise<string> {
+        const profile = await this.fetchSpotify<{ id: string }>('/me');
+        return profile.id;
+    }
+
+    /**
+     * Create a new playlist and add tracks
+     */
+    async createPlaylist(
+        name: string,
+        trackIds: string[],
+        description: string = 'Created with Rankify'
+    ): Promise<{ playlistId: string; playlistUrl: string }> {
+        // Get user ID
+        const userId = await this.getCurrentUserId();
+
+        // Create playlist
+        const playlist = await fetch(`${SPOTIFY_BASE_URL}/users/${userId}/playlists`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${this.accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name,
+                description,
+                public: false, // Private by default
+            }),
+        }).then(res => res.json());
+
+        if (!playlist.id) {
+            throw new Error('Failed to create playlist');
+        }
+
+        // Add tracks (Spotify accepts up to 100 URIs per request)
+        const uris = trackIds.map(id => `spotify:track:${id}`);
+
+        // Add tracks in batches of 100
+        for (let i = 0; i < uris.length; i += 100) {
+            const batch = uris.slice(i, i + 100);
+            await fetch(`${SPOTIFY_BASE_URL}/playlists/${playlist.id}/tracks`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${this.accessToken}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ uris: batch }),
+            });
+        }
+
+        return {
+            playlistId: playlist.id,
+            playlistUrl: playlist.external_urls?.spotify || `https://open.spotify.com/playlist/${playlist.id}`,
+        };
     }
 }
