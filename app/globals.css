@@ -123,20 +123,26 @@ body {
     box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
   }
 
-  /* ============================================
-     NEUBRUTALISM INPUT STYLES
-     ============================================ */
-  .nb-input {
-    background: var(--nb-card);
-    border: 2px solid var(--nb-border);
-    color: var(--nb-text);
-    font-family: inherit;
-  }
-
-  .nb-input:focus {
-    outline: none;
-    box-shadow: var(--nb-shadow-sm);
-  }
+   /* ============================================
+      NEUBRUTALISM INPUT STYLES
+      ============================================ */
+   .nb-input {
+     background: var(--nb-card);
+     border: 2px solid var(--nb-border);
+     color: var(--nb-text);
+     font-family: inherit;
+     font-size: 16px; /* Prevents iOS auto-zoom */
+   }
+ 
+   .nb-input:focus {
+     outline: none;
+     box-shadow: var(--nb-shadow-sm);
+   }
+ 
+   /* Global input override for iOS */
+   input, select, textarea {
+     font-size: 16px !important;
+   }
 
   /* ============================================
      NEUBRUTALISM TAG/BADGE STYLES
