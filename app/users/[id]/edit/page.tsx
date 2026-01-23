@@ -113,10 +113,10 @@ export default function EditProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f5f1e8] dark:bg-slate-900 flex items-center justify-center p-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#6b7d5a] mx-auto mb-4"></div>
-          <p className="text-slate-600 dark:text-slate-400">Loading profile...</p>
+      <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center p-8">
+        <div className="nb-card p-6 text-center">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-black mx-auto mb-4"></div>
+          <p className="font-bold text-gray-700">Loading profile...</p>
         </div>
       </div>
     )
@@ -124,13 +124,12 @@ export default function EditProfilePage() {
 
   if (error && !profile) {
     return (
-      <div className="min-h-screen bg-[#f5f1e8] dark:bg-slate-900 flex items-center justify-center p-8">
-        <div className="text-center">
-          <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
-          <Link
-            href={`/users/${userId}`}
-            className="text-[#6b7d5a] hover:underline"
-          >
+      <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center p-8">
+        <div className="nb-card p-6 text-center">
+          <p className="mb-4 font-bold text-black bg-[#ff6b6b] border-2 border-black px-4 py-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            {error}
+          </p>
+          <Link href={`/users/${userId}`} className="nb-button-outline px-6 py-3 inline-block">
             Back to profile
           </Link>
         </div>
@@ -139,43 +138,40 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f1e8] dark:bg-slate-900 p-4 md:p-8">
+    <div className="min-h-screen bg-[#fffdf5] p-4 md:p-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-6">
           <Link
             href={`/users/${userId}`}
-            className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-[#6b7d5a] mb-4"
+            className="inline-flex items-center gap-2 font-black uppercase text-sm mb-4"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back to profile
           </Link>
-          <h1 className="text-3xl md:text-4xl font-bold text-[#4a5d3a] dark:text-[#6b7d5a]">
-            Edit Profile
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400 mt-2">
-            Update your profile information
-          </p>
+          <div className="nb-tag inline-block mb-3">EDIT_PROFILE</div>
+          <h1 className="text-3xl md:text-4xl font-black uppercase">Edit Profile</h1>
+          <p className="text-sm font-bold text-gray-600 mt-2">Update your profile information</p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-6 md:p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="nb-card p-6 md:p-8 space-y-6">
           {/* Linked Spotify Account */}
-          <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-            <svg className="w-8 h-8 text-green-600 dark:text-green-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+          <div className="flex items-center gap-3 p-4 bg-[#e7ffe7] border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <svg className="w-8 h-8 text-black flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
             </svg>
             <div>
-              <p className="font-semibold text-green-800 dark:text-green-300">Linked Spotify Account</p>
-              <p className="text-sm text-green-600 dark:text-green-400">{profile?.email || 'Connected via Spotify'}</p>
+              <p className="font-black uppercase text-sm">Linked Spotify Account</p>
+              <p className="text-sm font-bold text-gray-700">{profile?.email || 'Connected via Spotify'}</p>
             </div>
           </div>
 
           {/* Display Name */}
           <div>
-            <label htmlFor="displayName" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <label htmlFor="displayName" className="block text-sm font-black uppercase mb-2">
               Display Name
             </label>
             <input
@@ -185,16 +181,16 @@ export default function EditProfilePage() {
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Your Name"
               maxLength={50}
-              className="w-full px-4 py-2 border-2 border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#6b7d5a] focus:border-transparent"
+              className="w-full px-4 py-3 nb-input"
             />
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-xs font-bold text-gray-600">
               Your public display name. Leave empty to use your Spotify name.
             </p>
           </div>
 
           {/* Bio */}
           <div>
-            <label htmlFor="bio" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <label htmlFor="bio" className="block text-sm font-black uppercase mb-2">
               Bio
             </label>
             <textarea
@@ -204,13 +200,13 @@ export default function EditProfilePage() {
               placeholder="Tell us about yourself..."
               maxLength={160}
               rows={4}
-              className="w-full px-4 py-2 border-2 border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-[#6b7d5a] focus:border-transparent resize-none"
+              className="w-full px-4 py-3 nb-input resize-none"
             />
             <div className="flex justify-between items-center mt-1">
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs font-bold text-gray-600">
                 Brief description about yourself. Leave empty to remove.
               </p>
-              <p className={`text-xs ${bio.length > 160 ? 'text-red-600 dark:text-red-400' : 'text-slate-500 dark:text-slate-400'}`}>
+              <p className={`text-xs font-bold ${bio.length > 160 ? 'text-[#ff6b6b]' : 'text-gray-600'}`}>
                 {bio.length}/160
               </p>
             </div>
@@ -218,14 +214,14 @@ export default function EditProfilePage() {
 
           {/* Error Message */}
           {error && (
-            <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-400 text-sm">
+            <div className="p-3 bg-[#ff6b6b] border-2 border-black text-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-sm">
               {error}
             </div>
           )}
 
           {/* Success Message */}
           {success && (
-            <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-400 text-sm">
+            <div className="p-3 bg-[#4ade80] border-2 border-black text-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-sm">
               Profile updated successfully! Redirecting...
             </div>
           )}
@@ -235,7 +231,7 @@ export default function EditProfilePage() {
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 px-6 py-3 font-semibold rounded-xl transition-all shadow-md hover:shadow-lg bg-gradient-to-r from-[#4a5d3a] to-[#6b7d5a] hover:from-[#5a6d4a] hover:to-[#7b8d6a] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 py-3 nb-button disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? (
                 <span className="flex items-center justify-center gap-2">
@@ -251,7 +247,7 @@ export default function EditProfilePage() {
             </button>
             <Link
               href={`/users/${userId}`}
-              className="px-6 py-3 font-semibold rounded-xl transition-all shadow-md hover:shadow-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600"
+              className="flex-1 py-3 nb-button-outline text-center"
             >
               Cancel
             </Link>
@@ -261,4 +257,3 @@ export default function EditProfilePage() {
     </div>
   )
 }
-

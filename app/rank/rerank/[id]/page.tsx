@@ -196,7 +196,7 @@ export default function ReRankPage({
 
             const { error } = await supabase.from('ranked_lists').insert({
                 user_id: user.id,
-                name: `${originalRanking.name} (Re-Ranked)`,
+                name: originalRanking.name ? `My ${originalRanking.name} Ranking` : 'My Ranking',
                 source_type: originalRanking.source_type,
                 source_id: originalRanking.source_id,
                 songs: state.rankedList,
@@ -249,7 +249,7 @@ export default function ReRankPage({
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                             </svg>
                         </div>
-                        <h1 className="text-3xl md:text-4xl font-black uppercase mb-2">Re-Ranking Complete!</h1>
+                        <h1 className="text-3xl md:text-4xl font-black uppercase mb-2">Ranking Complete!</h1>
                         <div className="nb-tag">{originalRanking?.name} • {state.rankedList.length} SONGS</div>
                     </div>
 
@@ -277,7 +277,7 @@ export default function ReRankPage({
                                             unoptimized
                                         />
                                     )}
-                                    <div className="flex-1">
+                                    <div className="flex-1 min-w-0">
                                         <h3 className="font-black truncate">{track.title}</h3>
                                         <p className="text-sm font-bold text-gray-600 truncate">{track.artist}</p>
                                     </div>
@@ -291,7 +291,7 @@ export default function ReRankPage({
                             Back to Rankings
                         </button>
                         <button onClick={saveReRanking} disabled={saving} className="flex-1 py-4 nb-button disabled:opacity-50">
-                            {saving ? 'Saving...' : 'Save Re-Ranking'}
+                            {saving ? 'Saving...' : 'Save Ranking'}
                         </button>
                     </div>
                 </div>
@@ -332,7 +332,7 @@ export default function ReRankPage({
                             <div className="h-full bg-[#ff90e8] transition-all duration-500" style={{ width: `${progress}%` }} />
                         </div>
                         <div className="flex justify-between text-xs font-bold">
-                            <span className="truncate max-w-[150px]">Re-Ranking: {originalRanking?.name}</span>
+                            <span className="truncate max-w-[150px]">Ranking: {originalRanking?.name}</span>
                             <span>{Math.round(progress)}% complete</span>
                         </div>
                     </div>

@@ -160,15 +160,15 @@ export default function ComparePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
             <div className="nb-card p-6">
               <div className="nb-tag-cyan text-xs mb-2">YOUR RANKING</div>
-              <h3 className="text-xl font-black uppercase mb-1">{yourRanking.name || 'Your Ranking'}</h3>
-              <p className="text-sm font-bold text-gray-600">
+              <h3 className="text-xl font-black uppercase mb-1 truncate">{yourRanking.name || 'Your Ranking'}</h3>
+              <p className="text-sm font-bold text-gray-600 truncate">
                 by {yourUser?.display_name || yourUser?.email || 'You'}
               </p>
             </div>
-            <div className="nb-card p-6">
+            <div className="nb-card p-6 min-w-0">
               <div className="nb-tag-pink text-xs mb-2">THEIR RANKING</div>
-              <h3 className="text-xl font-black uppercase mb-1">{theirRanking.name || 'Their Ranking'}</h3>
-              <p className="text-sm font-bold text-gray-600">
+              <h3 className="text-xl font-black uppercase mb-1 truncate">{theirRanking.name || 'Their Ranking'}</h3>
+              <p className="text-sm font-bold text-gray-600 truncate">
                 by {theirUser?.display_name || theirUser?.email || 'Them'}
               </p>
             </div>

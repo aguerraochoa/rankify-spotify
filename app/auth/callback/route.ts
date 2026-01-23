@@ -1,10 +1,19 @@
 import { createClient } from '@/lib/supabase/server'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url)
   const code = requestUrl.searchParams.get('code')
-  const next = requestUrl.searchParams.get('next') || '/'
+
+  // Try to get 'next' from query param first, then from cookie
+  let next = requestUrl.searchParams.get('next')
+
+  if (!next) {
+    next = request.cookies.get('sb-next-url')?.value ?? null
+  }
+
+  // Default to root if nothing found
+  const finalNext = next || '/'
 
   if (code) {
     const supabase = await createClient()
@@ -19,8 +28,13 @@ export async function GET(request: Request) {
     }
 
     // Redirect to intended destination
-    const redirectUrl = new URL(next, requestUrl.origin)
-    return NextResponse.redirect(redirectUrl)
+    const redirectUrl = new URL(finalNext, requestUrl.origin)
+    const finalResponse = NextResponse.redirect(redirectUrl)
+
+    // Clear the next-url cookie
+    finalResponse.cookies.set('sb-next-url', '', { path: '/', maxAge: 0 })
+
+    return finalResponse
   }
 
   // No code provided, redirect to login

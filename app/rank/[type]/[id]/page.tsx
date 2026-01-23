@@ -483,8 +483,10 @@ export default function RankingFlowPage({
                                     </div>
                                 )}
                             </div>
-                            <h3 className="font-black text-base md:text-xl uppercase mb-1 truncate leading-tight">{state.currentItem.title}</h3>
-                            <p className="font-bold text-[10px] md:text-sm bg-[#00d4ff] inline-block px-1.5 md:px-2 border border-black mb-3 md:mb-4 truncate max-w-full">{state.currentItem.artist}</p>
+                            <h3 className="font-black text-base md:text-xl uppercase mb-1 truncate leading-tight w-full">{state.currentItem.title}</h3>
+                            <div className="min-w-0 max-w-full">
+                                <p className="font-bold text-[10px] md:text-sm bg-[#00d4ff] inline-block px-1.5 md:px-2 border border-black mb-3 md:mb-4 truncate max-w-full">{state.currentItem.artist}</p>
+                            </div>
                             <button
                                 onClick={() => handleChoice(true)}
                                 className="w-full py-2 md:py-4 nb-button text-xs md:text-base"
@@ -544,8 +546,10 @@ export default function RankingFlowPage({
                                     </div>
                                 )}
                             </div>
-                            <h3 className="font-black text-base md:text-xl uppercase mb-1 truncate leading-tight">{comparisonTrack.title}</h3>
-                            <p className="font-bold text-[10px] md:text-sm bg-[#ff6b6b] inline-block px-1.5 md:px-2 border border-black mb-3 md:mb-4 truncate max-w-full">{comparisonTrack.artist}</p>
+                            <h3 className="font-black text-base md:text-xl uppercase mb-1 truncate leading-tight w-full">{comparisonTrack.title}</h3>
+                            <div className="min-w-0 max-w-full">
+                                <p className="font-bold text-[10px] md:text-sm bg-[#ff6b6b] inline-block px-1.5 md:px-2 border border-black mb-3 md:mb-4 truncate max-w-full">{comparisonTrack.artist}</p>
+                            </div>
                             <button
                                 onClick={() => handleChoice(false)}
                                 className="w-full py-2 md:py-4 nb-button text-xs md:text-base"

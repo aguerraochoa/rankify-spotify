@@ -49,17 +49,19 @@ export default function LoginPage() {
 
     const urlParams = new URLSearchParams(window.location.search)
     const nextUrl = urlParams.get('next') || '/'
+
+    // Store nextUrl in a cookie that auth callback can read
+    // Set for 5 minutes, sameSite=Lax for OAuth flow
+    document.cookie = `sb-next-url=${encodeURIComponent(nextUrl)}; path=/; max-age=300; SameSite=Lax`
+
     const callbackUrl = new URL('/auth/callback', window.location.origin)
-    callbackUrl.searchParams.set('next', nextUrl)
+    // No longer setting ?next= in the URL to keep it simple and consistent for Spotify
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'spotify',
       options: {
         redirectTo: callbackUrl.toString(),
         scopes: 'user-read-email user-read-private playlist-read-private playlist-read-collaborative user-library-read playlist-modify-public playlist-modify-private',
-        queryParams: {
-          show_dialog: 'true',
-        },
       },
     })
 
