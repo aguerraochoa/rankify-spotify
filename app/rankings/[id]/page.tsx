@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { NavHeader } from '@/components/NavHeader'
+import html2canvas from 'html2canvas'
 
 interface RankedSong {
   musicbrainz_id?: string
@@ -34,6 +35,9 @@ export default function RankingDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [sharing, setSharing] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+  const rankingRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -102,6 +106,60 @@ export default function RankingDetailPage() {
       }
     } catch (err) {
       alert('Failed to update visibility')
+    }
+  }
+
+  const handleShare = async () => {
+    if (!ranking) return
+    setSharing(true)
+    try {
+      const response = await fetch(`/api/ranked-lists/${rankingId}/share`, {
+        method: 'POST',
+      })
+      if (!response.ok) throw new Error('Failed to generate share link')
+      const { shareUrl } = await response.json()
+
+      if (navigator.share) {
+        await navigator.share({
+          title: `My ${ranking.name} Ranking`,
+          text: `Check out my ${ranking.name} ranking on Rankify!`,
+          url: shareUrl,
+        })
+      } else {
+        await navigator.clipboard.writeText(shareUrl)
+        alert('Share link copied to clipboard!')
+      }
+    } catch (err) {
+      console.error('Error sharing:', err)
+      alert('Failed to share ranking')
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  const handleDownload = async () => {
+    if (!rankingRef.current || !ranking) return
+    setDownloading(true)
+    try {
+      // Small delay to ensure images are loaded
+      await new Promise(resolve => setTimeout(resolve, 500))
+
+      const canvas = await html2canvas(rankingRef.current, {
+        useCORS: true,
+        backgroundColor: '#fffdf5',
+        scale: 2, // Higher quality
+      })
+
+      const image = canvas.toDataURL('image/png')
+      const link = document.createElement('a')
+      link.href = image
+      link.download = `${ranking.name?.replace(/\s+/g, '_')}_ranking.png`
+      link.click()
+    } catch (err) {
+      console.error('Error downloading:', err)
+      alert('Failed to download ranking image')
+    } finally {
+      setDownloading(false)
     }
   }
 
@@ -177,65 +235,87 @@ export default function RankingDetailPage() {
                   </svg>
                   Re-Rank
                 </Link>
-                <button onClick={toggleVisibility} className="nb-button-outline px-4 py-2">
+                <button onClick={toggleVisibility} className="nb-button-outline px-4 py-2 text-sm md:text-base">
                   {ranking.is_public ? 'Make Private' : 'Make Public'}
                 </button>
-                <button onClick={handleDelete} className="px-4 py-2 bg-[#ff6b6b] border-2 border-black font-black uppercase hover:bg-[#ff4b4b] transition-colors">
+                <button
+                  onClick={handleShare}
+                  disabled={sharing}
+                  className="nb-button px-4 py-2 flex items-center gap-2 text-sm md:text-base border-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 101.32-3.32m0 1.32a3 3 0 110 2.684m0 0l-6.632 3.316m6.632-6l-6.632-3.316" />
+                  </svg>
+                  {sharing ? 'Sharing...' : 'Share'}
+                </button>
+                <button
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="bg-black text-white px-4 py-2 flex items-center gap-2 text-sm md:text-base border-2 border-black hover:bg-gray-800 transition-colors uppercase font-black"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  {downloading ? '...' : 'Download'}
+                </button>
+                <button onClick={handleDelete} className="px-4 py-2 bg-[#ff6b6b] border-2 border-black font-black uppercase hover:bg-[#ff4b4b] transition-colors text-sm md:text-base">
                   Delete
                 </button>
               </div>
             )}
           </div>
 
-          {/* Songs List */}
-          <div className="mb-6">
-            <h2 className="text-2xl font-black uppercase mb-4">Full Ranking</h2>
-          </div>
-
-          <div className="space-y-3 mb-6">
-            {ranking.songs.map((song, index) => (
-              <div
-                key={index}
-                className="nb-card-sm p-4 flex items-center gap-3 md:gap-4"
-              >
-                <span className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center border-2 border-black font-black text-xl flex-shrink-0 ${index === 0 ? 'bg-[#ffd700]' :
-                  index === 1 ? 'bg-[#c0c0c0]' :
-                    index === 2 ? 'bg-[#cd7f32]' :
-                      'bg-white'
-                  }`}>
-                  {index + 1}
-                </span>
-                {song.cover_art_url && (
-                  <Image
-                    src={song.cover_art_url}
-                    alt={song.title}
-                    width={64}
-                    height={64}
-                    className="w-12 h-12 md:w-14 md:h-14 border-2 border-black object-cover flex-shrink-0"
-                    unoptimized
-                  />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-black text-base md:text-lg truncate">{song.title}</p>
-                  <p className="text-sm md:text-base font-bold text-gray-600 truncate">{song.artist}</p>
-                  {song.album_title && (
-                    <p className="text-xs md:text-sm font-bold text-gray-500 truncate">{song.album_title}</p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Actions at bottom */}
-          {!isOwner && (
-            <div className="nb-card p-8 text-center">
-              <h3 className="text-2xl font-black uppercase mb-2">Like This Ranking?</h3>
-              <p className="font-bold text-gray-600 mb-6">Create your own version!</p>
-              <Link href={`/rank/rerank/${rankingId}`} className="nb-button px-8 py-3 inline-block">
-                Re-Rank These Songs
-              </Link>
+          <div ref={rankingRef} className="bg-[#fffdf5] p-2 md:p-4">
+            {/* Songs List */}
+            <div className="mb-6">
+              <h2 className="text-2xl font-black uppercase mb-4">Full Ranking</h2>
             </div>
-          )}
+
+            <div className="space-y-3 mb-6">
+              {ranking.songs.map((song, index) => (
+                <div
+                  key={index}
+                  className="nb-card-sm p-4 flex items-center gap-3 md:gap-4"
+                >
+                  <span className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center border-2 border-black font-black text-xl flex-shrink-0 ${index === 0 ? 'bg-[#ffd700]' :
+                    index === 1 ? 'bg-[#c0c0c0]' :
+                      index === 2 ? 'bg-[#cd7f32]' :
+                        'bg-white'
+                    }`}>
+                    {index + 1}
+                  </span>
+                  {song.cover_art_url && (
+                    <Image
+                      src={song.cover_art_url}
+                      alt={song.title}
+                      width={64}
+                      height={64}
+                      className="w-12 h-12 md:w-14 md:h-14 border-2 border-black object-cover flex-shrink-0"
+                      unoptimized
+                    />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-black text-base md:text-lg truncate">{song.title}</p>
+                    <p className="text-sm md:text-base font-bold text-gray-600 truncate">{song.artist}</p>
+                    {song.album_title && (
+                      <p className="text-xs md:text-sm font-bold text-gray-500 truncate">{song.album_title}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Actions at bottom */}
+            {!isOwner && (
+              <div className="nb-card p-8 text-center">
+                <h3 className="text-2xl font-black uppercase mb-2">Like This Ranking?</h3>
+                <p className="font-bold text-gray-600 mb-6">Create your own version!</p>
+                <Link href={`/rank/rerank/${rankingId}`} className="nb-button px-8 py-3 inline-block">
+                  Re-Rank These Songs
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

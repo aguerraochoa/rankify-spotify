@@ -151,6 +151,38 @@ export default function ReRankPage({
         }
     }
 
+    const handleSkip = useCallback(() => {
+        setState(prev => {
+            if (!prev) return null
+            const { rankedList, unrankedList } = prev
+
+            // Skip currentItem, move to next from unrankedList
+            if (unrankedList.length === 0) {
+                setIsComplete(true)
+                return {
+                    rankedList,
+                    unrankedList: [],
+                    currentItem: null,
+                    comparisonIndex: 0,
+                    low: 0,
+                    high: 0,
+                }
+            }
+
+            const nextItem = unrankedList[0]
+            const newUnranked = unrankedList.slice(1)
+            return {
+                rankedList,
+                unrankedList: newUnranked,
+                currentItem: nextItem,
+                comparisonIndex: Math.floor((rankedList.length - 1) / 2),
+                low: 0,
+                high: rankedList.length - 1,
+            }
+        })
+    }, [])
+
+
     const saveReRanking = async () => {
         if (!state || !originalRanking) return
         setSaving(true)
@@ -312,12 +344,12 @@ export default function ReRankPage({
                         <h2 className="text-2xl md:text-4xl font-black uppercase">Choose Your Fighter</h2>
                     </div>
 
-                    <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6 relative">
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 bg-black text-white font-black text-2xl px-4 py-2 rotate-12 hidden md:block border-2 border-white">
+                    <div className="max-w-3xl mx-auto grid grid-cols-2 gap-3 md:gap-6 mb-4 relative">
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 bg-black text-white font-black text-lg md:text-2xl px-2 md:px-4 py-1 md:py-2 rotate-12 border-2 border-white">
                             VS
                         </div>
 
-                        <div className="nb-card p-4 md:p-6 group">
+                        <div className="nb-card p-3 md:p-6 group">
                             <div className="relative aspect-square border-4 border-black mb-4 bg-[#00d4ff] overflow-hidden">
                                 {state.currentItem.coverArtUrl ? (
                                     <Image
@@ -333,12 +365,12 @@ export default function ReRankPage({
                                     </div>
                                 )}
                             </div>
-                            <h3 className="font-black text-lg md:text-xl uppercase mb-1 truncate">{state.currentItem.title}</h3>
-                            <p className="font-bold text-sm bg-[#00d4ff] inline-block px-2 border border-black mb-4 truncate max-w-full">{state.currentItem.artist}</p>
-                            <button onClick={() => handleChoice(true)} className="w-full py-4 nb-button">Vote This</button>
+                            <h3 className="font-black text-base md:text-xl uppercase mb-1 truncate leading-tight">{state.currentItem.title}</h3>
+                            <p className="font-bold text-[10px] md:text-sm bg-[#00d4ff] inline-block px-1.5 md:px-2 border border-black mb-3 md:mb-4 truncate max-w-full">{state.currentItem.artist}</p>
+                            <button onClick={() => handleChoice(true)} className="w-full py-2 md:py-4 nb-button text-xs md:text-base">Vote This</button>
                         </div>
 
-                        <div className="nb-card p-4 md:p-6 group">
+                        <div className="nb-card p-3 md:p-6 group">
                             <div className="relative aspect-square border-4 border-black mb-4 bg-[#ff6b6b] overflow-hidden">
                                 {comparisonTrack.coverArtUrl ? (
                                     <Image
@@ -354,10 +386,23 @@ export default function ReRankPage({
                                     </div>
                                 )}
                             </div>
-                            <h3 className="font-black text-lg md:text-xl uppercase mb-1 truncate">{comparisonTrack.title}</h3>
-                            <p className="font-bold text-sm bg-[#ff6b6b] inline-block px-2 border border-black mb-4 truncate max-w-full">{comparisonTrack.artist}</p>
-                            <button onClick={() => handleChoice(false)} className="w-full py-4 nb-button">Vote This</button>
+                            <h3 className="font-black text-base md:text-xl uppercase mb-1 truncate leading-tight">{comparisonTrack.title}</h3>
+                            <p className="font-bold text-[10px] md:text-sm bg-[#ff6b6b] inline-block px-1.5 md:px-2 border border-black mb-3 md:mb-4 truncate max-w-full">{comparisonTrack.artist}</p>
+                            <button onClick={() => handleChoice(false)} className="w-full py-2 md:py-4 nb-button text-xs md:text-base">Vote This</button>
                         </div>
+                    </div>
+
+                    {/* I Don't Know Button */}
+                    <div className="max-w-3xl mx-auto mb-6">
+                        <button
+                            onClick={handleSkip}
+                            className="w-full py-3 bg-[#e0e0e0] border-2 border-black font-bold uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-2 transition-all"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                            </svg>
+                            I don&apos;t know this song (Skip)
+                        </button>
                     </div>
 
                     <p className="text-center font-bold text-sm">{state.unrankedList.length + 1} songs remaining</p>

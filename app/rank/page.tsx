@@ -123,7 +123,12 @@ export default function RankPage() {
     if (sourceType === 'playlist') {
         return (
             <div className="min-h-screen bg-[#fffdf5]">
-                <NavHeader title="Select Playlist" showBack={true} backLabel="Back" backHref="/rank" />
+                <NavHeader
+                    title="Select Playlist"
+                    showBack={true}
+                    backLabel="Back"
+                    onBack={() => setSourceType(null)}
+                />
 
                 <div className="p-4 md:p-6">
                     <div className="max-w-4xl mx-auto pt-4">
@@ -187,7 +192,12 @@ export default function RankPage() {
     if (sourceType === 'album') {
         return (
             <div className="min-h-screen bg-[#fffdf5]">
-                <NavHeader title="Search Album" showBack={true} backLabel="Back" backHref="/rank" />
+                <NavHeader
+                    title="Search Album"
+                    showBack={true}
+                    backLabel="Back"
+                    onBack={() => setSourceType(null)}
+                />
 
                 <div className="p-4 md:p-6">
                     <div className="max-w-4xl mx-auto pt-4">
