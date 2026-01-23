@@ -6,13 +6,14 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { NavHeader } from '@/components/NavHeader'
-import html2canvas from 'html2canvas'
+import { generateRankingImage } from '@/lib/image/generateRankingImage'
 
 interface RankedSong {
   musicbrainz_id?: string
   title: string
   artist: string
   cover_art_url?: string
+  coverArtUrl?: string // Handle legacy/camelCase data
   album_title?: string
   rank?: number
 }
@@ -138,23 +139,10 @@ export default function RankingDetailPage() {
   }
 
   const handleDownload = async () => {
-    if (!rankingRef.current || !ranking) return
+    if (!ranking) return
     setDownloading(true)
     try {
-      // Small delay to ensure images are loaded
-      await new Promise(resolve => setTimeout(resolve, 500))
-
-      const canvas = await html2canvas(rankingRef.current, {
-        useCORS: true,
-        backgroundColor: '#fffdf5',
-        scale: 2, // Higher quality
-      })
-
-      const image = canvas.toDataURL('image/png')
-      const link = document.createElement('a')
-      link.href = image
-      link.download = `${ranking.name?.replace(/\s+/g, '_')}_ranking.png`
-      link.click()
+      await generateRankingImage(ranking)
     } catch (err) {
       console.error('Error downloading:', err)
       alert('Failed to download ranking image')
@@ -284,9 +272,9 @@ export default function RankingDetailPage() {
                     }`}>
                     {index + 1}
                   </span>
-                  {song.cover_art_url && (
+                  {(song.cover_art_url || song.coverArtUrl) && (
                     <Image
-                      src={song.cover_art_url}
+                      src={song.cover_art_url || song.coverArtUrl || ''}
                       alt={song.title}
                       width={64}
                       height={64}
@@ -305,9 +293,9 @@ export default function RankingDetailPage() {
               ))}
             </div>
 
-            {/* Actions at bottom */}
+            {/* Actions at bottom - marked class for removal during download */}
             {!isOwner && (
-              <div className="nb-card p-8 text-center">
+              <div className="nb-card p-8 text-center actions-section">
                 <h3 className="text-2xl font-black uppercase mb-2">Like This Ranking?</h3>
                 <p className="font-bold text-gray-600 mb-6">Create your own version!</p>
                 <Link href={`/rank/rerank/${rankingId}`} className="nb-button px-8 py-3 inline-block">
