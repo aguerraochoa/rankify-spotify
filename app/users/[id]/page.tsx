@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { NavHeader } from '@/components/NavHeader'
 
@@ -157,10 +158,13 @@ export default function UserProfilePage() {
           <div className="nb-card p-6 md:p-8 mb-8">
             <div className="flex flex-col md:flex-row items-start gap-6">
               {profile.avatar_url ? (
-                <img
+                <Image
                   src={profile.avatar_url}
                   alt={profile.display_name || 'User'}
+                  width={128}
+                  height={128}
                   className="w-24 h-24 md:w-32 md:h-32 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] object-cover flex-shrink-0"
+                  unoptimized
                 />
               ) : (
                 <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center bg-[#4ade80] border-4 border-black font-black text-4xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex-shrink-0">
@@ -191,8 +195,8 @@ export default function UserProfilePage() {
                       onClick={handleFollowToggle}
                       disabled={isTogglingFollow}
                       className={`px-6 py-3 font-black uppercase border-2 border-black transition-all disabled:opacity-50 ${isFollowing
-                          ? 'bg-white hover:bg-[#ff6b6b]'
-                          : 'nb-button'
+                        ? 'bg-white hover:bg-[#ff6b6b]'
+                        : 'nb-button'
                         }`}
                     >
                       {isFollowing ? 'Unfollow' : 'Follow'}
@@ -263,8 +267,8 @@ export default function UserProfilePage() {
                         {ranking.songs.slice(0, 3).map((song, index) => (
                           <div key={index} className="flex items-center gap-2 p-2 bg-white border-2 border-black">
                             <span className={`w-6 h-6 flex items-center justify-center border border-black text-xs font-black ${index === 0 ? 'bg-[#ffd700]' :
-                                index === 1 ? 'bg-[#c0c0c0]' :
-                                  'bg-[#cd7f32]'
+                              index === 1 ? 'bg-[#c0c0c0]' :
+                                'bg-[#cd7f32]'
                               }`}>
                               {index + 1}
                             </span>

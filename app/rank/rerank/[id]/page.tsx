@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 
 interface Song {
@@ -228,14 +229,21 @@ export default function ReRankPage({
                             {state.rankedList.map((track, index) => (
                                 <div key={track.id} className="flex items-center gap-3 p-3 border-b-2 border-black last:border-0">
                                     <span className={`w-10 h-10 flex items-center justify-center border-2 border-black font-black ${index === 0 ? 'bg-[#ffd700]' :
-                                            index === 1 ? 'bg-[#c0c0c0]' :
-                                                index === 2 ? 'bg-[#cd7f32]' :
-                                                    'bg-white'
+                                        index === 1 ? 'bg-[#c0c0c0]' :
+                                            index === 2 ? 'bg-[#cd7f32]' :
+                                                'bg-white'
                                         }`}>
                                         {index + 1}
                                     </span>
                                     {track.coverArtUrl && (
-                                        <img src={track.coverArtUrl} alt="" className="w-12 h-12 border-2 border-black" />
+                                        <Image
+                                            src={track.coverArtUrl}
+                                            alt=""
+                                            width={48}
+                                            height={48}
+                                            className="w-12 h-12 border-2 border-black object-cover"
+                                            unoptimized
+                                        />
                                     )}
                                     <div className="flex-1">
                                         <h3 className="font-black truncate">{track.title}</h3>
@@ -312,7 +320,13 @@ export default function ReRankPage({
                         <div className="nb-card p-4 md:p-6 group">
                             <div className="relative aspect-square border-4 border-black mb-4 bg-[#00d4ff] overflow-hidden">
                                 {state.currentItem.coverArtUrl ? (
-                                    <img src={state.currentItem.coverArtUrl} alt={state.currentItem.title} className="w-full h-full object-cover" />
+                                    <Image
+                                        src={state.currentItem.coverArtUrl}
+                                        alt={state.currentItem.title}
+                                        fill
+                                        className="object-cover"
+                                        unoptimized
+                                    />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">
                                         <span className="text-6xl font-black text-white">A</span>
@@ -327,7 +341,13 @@ export default function ReRankPage({
                         <div className="nb-card p-4 md:p-6 group">
                             <div className="relative aspect-square border-4 border-black mb-4 bg-[#ff6b6b] overflow-hidden">
                                 {comparisonTrack.coverArtUrl ? (
-                                    <img src={comparisonTrack.coverArtUrl} alt={comparisonTrack.title} className="w-full h-full object-cover" />
+                                    <Image
+                                        src={comparisonTrack.coverArtUrl}
+                                        alt={comparisonTrack.title}
+                                        fill
+                                        className="object-cover"
+                                        unoptimized
+                                    />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center">
                                         <span className="text-6xl font-black text-white">B</span>
@@ -358,14 +378,21 @@ export default function ReRankPage({
                         {state.rankedList.map((track, index) => (
                             <div key={track.id} className="flex items-center gap-3 p-3 border-b-2 border-black">
                                 <span className={`w-8 h-8 flex items-center justify-center border-2 border-black text-xs font-black ${index === 0 ? 'bg-[#ffd700]' :
-                                        index === 1 ? 'bg-[#c0c0c0]' :
-                                            index === 2 ? 'bg-[#cd7f32]' :
-                                                'bg-white'
+                                    index === 1 ? 'bg-[#c0c0c0]' :
+                                        index === 2 ? 'bg-[#cd7f32]' :
+                                            'bg-white'
                                     }`}>
                                     {index + 1}
                                 </span>
                                 {track.coverArtUrl && (
-                                    <img src={track.coverArtUrl} alt="" className="w-10 h-10 border-2 border-black" />
+                                    <Image
+                                        src={track.coverArtUrl}
+                                        alt=""
+                                        width={40}
+                                        height={40}
+                                        className="w-10 h-10 border-2 border-black object-cover"
+                                        unoptimized
+                                    />
                                 )}
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-black truncate">{track.title}</p>

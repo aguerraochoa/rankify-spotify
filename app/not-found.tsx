@@ -8,7 +8,7 @@ export default function NotFound() {
           <span className="text-4xl font-black">404</span>
         </div>
         <h2 className="text-3xl md:text-4xl font-black uppercase mb-4">Page Not Found</h2>
-        <p className="font-bold text-gray-600 mb-6">This page doesn't exist or has been moved.</p>
+        <p className="font-bold text-gray-600 mb-6">This page doesn&apos;t exist or has been moved.</p>
         <Link href="/" className="nb-button px-8 py-3 inline-block">
           Return Home
         </Link>

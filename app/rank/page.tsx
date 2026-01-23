@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { SpotifyPlaylist } from '@/lib/spotify/types'
 import { NavHeader } from '@/components/NavHeader'
@@ -151,10 +153,13 @@ export default function RankPage() {
                                     >
                                         <div className="aspect-square border-2 border-black overflow-hidden mb-3 bg-[#4ade80]">
                                             {playlist.images?.[0]?.url ? (
-                                                <img
+                                                <Image
                                                     src={playlist.images[0].url}
                                                     alt={playlist.name}
+                                                    width={300}
+                                                    height={300}
                                                     className="w-full h-full object-cover"
+                                                    unoptimized
                                                 />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center text-4xl">🎵</div>
@@ -227,10 +232,13 @@ export default function RankPage() {
                                 >
                                     <div className="aspect-square border-2 border-black overflow-hidden mb-3 bg-[#ff90e8]">
                                         {album.coverArtUrl ? (
-                                            <img
+                                            <Image
                                                 src={album.coverArtUrl}
                                                 alt={album.title}
+                                                width={300}
+                                                height={300}
                                                 className="w-full h-full object-cover"
+                                                unoptimized
                                             />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center text-4xl">💿</div>

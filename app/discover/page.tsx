@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { NavHeader } from '@/components/NavHeader'
 
@@ -156,7 +157,14 @@ export default function DiscoverPage() {
                     <Link key={user.id} href={`/users/${user.id}`} className="nb-card p-6 group">
                       <div className="flex items-start gap-4 mb-4">
                         {user.avatar_url ? (
-                          <img src={user.avatar_url} alt="" className="w-16 h-16 border-2 border-black" />
+                          <Image
+                            src={user.avatar_url}
+                            alt=""
+                            width={64}
+                            height={64}
+                            className="w-16 h-16 border-2 border-black object-cover"
+                            unoptimized
+                          />
                         ) : (
                           <div className="w-16 h-16 flex items-center justify-center bg-[#4ade80] border-2 border-black font-black text-2xl">
                             {(user.display_name || user.email || 'U').charAt(0).toUpperCase()}
@@ -204,7 +212,14 @@ export default function DiscoverPage() {
                     <Link key={user.id} href={`/users/${user.id}`} className="nb-card p-6 group">
                       <div className="flex items-start gap-4 mb-4">
                         {user.avatar_url ? (
-                          <img src={user.avatar_url} alt="" className="w-16 h-16 border-2 border-black" />
+                          <Image
+                            src={user.avatar_url}
+                            alt=""
+                            width={64}
+                            height={64}
+                            className="w-16 h-16 border-2 border-black object-cover"
+                            unoptimized
+                          />
                         ) : (
                           <div className="w-16 h-16 flex items-center justify-center bg-[#4ade80] border-2 border-black font-black text-2xl">
                             {(user.display_name || user.email || 'U').charAt(0).toUpperCase()}

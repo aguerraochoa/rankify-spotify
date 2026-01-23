@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 
 interface User {
@@ -26,16 +26,7 @@ export default function UserListModal({ userId, type, title, onClose }: UserList
     const [error, setError] = useState<string | null>(null)
     const modalRef = useRef<HTMLDivElement>(null)
 
-    useEffect(() => {
-        fetchUsers(1, false)
-        // Lock body scroll
-        document.body.style.overflow = 'hidden'
-        return () => {
-            document.body.style.overflow = 'unset'
-        }
-    }, [userId, type])
-
-    const fetchUsers = async (pageNum: number, isLoadMore: boolean) => {
+    const fetchUsers = useCallback(async (pageNum: number, isLoadMore: boolean) => {
         if (isLoadMore) setLoadingMore(true)
         else setLoading(true)
 
@@ -58,7 +49,16 @@ export default function UserListModal({ userId, type, title, onClose }: UserList
             setLoading(false)
             setLoadingMore(false)
         }
-    }
+    }, [userId, type])
+
+    useEffect(() => {
+        fetchUsers(1, false)
+        // Lock body scroll
+        document.body.style.overflow = 'hidden'
+        return () => {
+            document.body.style.overflow = 'unset'
+        }
+    }, [fetchUsers])
 
     const handleLoadMore = () => {
         fetchUsers(page + 1, true)

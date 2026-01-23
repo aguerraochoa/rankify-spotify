@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { NavHeader } from '@/components/NavHeader'
 
@@ -198,17 +199,20 @@ export default function RankingDetailPage() {
                 className="nb-card-sm p-4 flex items-center gap-3 md:gap-4"
               >
                 <span className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center border-2 border-black font-black text-xl flex-shrink-0 ${index === 0 ? 'bg-[#ffd700]' :
-                    index === 1 ? 'bg-[#c0c0c0]' :
-                      index === 2 ? 'bg-[#cd7f32]' :
-                        'bg-white'
+                  index === 1 ? 'bg-[#c0c0c0]' :
+                    index === 2 ? 'bg-[#cd7f32]' :
+                      'bg-white'
                   }`}>
                   {index + 1}
                 </span>
                 {song.cover_art_url && (
-                  <img
+                  <Image
                     src={song.cover_art_url}
                     alt={song.title}
+                    width={64}
+                    height={64}
                     className="w-12 h-12 md:w-14 md:h-14 border-2 border-black object-cover flex-shrink-0"
+                    unoptimized
                   />
                 )}
                 <div className="flex-1 min-w-0">

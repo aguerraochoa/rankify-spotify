@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 
 // Sample data for mockups
 const mockSong1 = { title: "Blinding Lights", artist: "The Weeknd", coverUrl: "https://i.scdn.co/image/ab67616d0000b2738863bc11d2aa12b54f5aeb36" }
@@ -29,8 +30,8 @@ export default function DesignChangePage() {
                             key={design.id}
                             onClick={() => setActiveDesign(idx)}
                             className={`px-6 py-3 rounded-xl font-semibold transition-all ${activeDesign === idx
-                                    ? 'bg-green-500 text-white shadow-lg'
-                                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                                ? 'bg-green-500 text-white shadow-lg'
+                                : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                                 }`}
                         >
                             {design.name}
@@ -53,7 +54,14 @@ export default function DesignChangePage() {
                                     {[mockSong1, mockSong2].map((song, idx) => (
                                         <div key={idx} className="group bg-zinc-900 rounded-xl p-6 border border-zinc-800 hover:border-green-500 transition-all cursor-pointer">
                                             <div className="relative aspect-square rounded-lg overflow-hidden mb-4 bg-zinc-800">
-                                                <img src={song.coverUrl} alt={song.title} className="w-full h-full object-cover" />
+                                                <Image
+                                                    src={song.coverUrl}
+                                                    alt={song.title}
+                                                    width={300}
+                                                    height={300}
+                                                    className="w-full h-full object-cover"
+                                                    unoptimized
+                                                />
                                                 <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shadow-xl">
                                                         <svg className="w-6 h-6 text-black ml-1" fill="currentColor" viewBox="0 0 24 24">
@@ -75,7 +83,14 @@ export default function DesignChangePage() {
                             {/* Ranking Card */}
                             <div className="bg-black rounded-2xl p-6 border border-zinc-800">
                                 <div className="flex items-center gap-4 mb-4">
-                                    <img src={mockSong1.coverUrl} alt="" className="w-20 h-20 rounded-lg" />
+                                    <Image
+                                        src={mockSong1.coverUrl}
+                                        alt=""
+                                        width={80}
+                                        height={80}
+                                        className="w-20 h-20 rounded-lg"
+                                        unoptimized
+                                    />
                                     <div>
                                         <h3 className="text-xl font-bold text-white">My Top 10 Songs</h3>
                                         <p className="text-zinc-400">10 songs • Created today</p>
@@ -106,7 +121,14 @@ export default function DesignChangePage() {
                                     {[mockSong1, mockSong2].map((song, idx) => (
                                         <div key={idx} className="group bg-white rounded-xl p-6 border-2 border-[#dce8d0] hover:border-[#6b7d5a] shadow-lg transition-all cursor-pointer">
                                             <div className="relative aspect-square rounded-lg overflow-hidden mb-4 bg-slate-100">
-                                                <img src={song.coverUrl} alt={song.title} className="w-full h-full object-cover" />
+                                                <Image
+                                                    src={song.coverUrl}
+                                                    alt={song.title}
+                                                    width={300}
+                                                    height={300}
+                                                    className="w-full h-full object-cover"
+                                                    unoptimized
+                                                />
                                                 <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <div className="w-14 h-14 rounded-full bg-[#4a5d3a] flex items-center justify-center shadow-xl">
                                                         <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
@@ -128,7 +150,14 @@ export default function DesignChangePage() {
                             {/* Ranking Card */}
                             <div className="bg-white rounded-2xl p-6 border-2 border-[#dce8d0] shadow-lg">
                                 <div className="flex items-center gap-4 mb-4">
-                                    <img src={mockSong1.coverUrl} alt="" className="w-20 h-20 rounded-lg shadow-md" />
+                                    <Image
+                                        src={mockSong1.coverUrl}
+                                        alt=""
+                                        width={80}
+                                        height={80}
+                                        className="w-20 h-20 rounded-lg shadow-md"
+                                        unoptimized
+                                    />
                                     <div>
                                         <h3 className="text-xl font-bold text-slate-900">My Top 10 Songs</h3>
                                         <p className="text-slate-500">10 songs • Created today</p>
@@ -159,7 +188,14 @@ export default function DesignChangePage() {
                                     {[mockSong1, mockSong2].map((song, idx) => (
                                         <div key={idx} className="group bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm hover:shadow-xl transition-all cursor-pointer">
                                             <div className="relative aspect-square rounded-2xl overflow-hidden mb-4">
-                                                <img src={song.coverUrl} alt={song.title} className="w-full h-full object-cover" />
+                                                <Image
+                                                    src={song.coverUrl}
+                                                    alt={song.title}
+                                                    width={300}
+                                                    height={300}
+                                                    className="w-full h-full object-cover"
+                                                    unoptimized
+                                                />
                                                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-lg">
                                                         <svg className="w-5 h-5 text-slate-900 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
@@ -181,7 +217,14 @@ export default function DesignChangePage() {
                             {/* Ranking Card */}
                             <div className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm">
                                 <div className="flex items-center gap-4 mb-4">
-                                    <img src={mockSong1.coverUrl} alt="" className="w-16 h-16 rounded-xl" />
+                                    <Image
+                                        src={mockSong1.coverUrl}
+                                        alt=""
+                                        width={64}
+                                        height={64}
+                                        className="w-16 h-16 rounded-xl"
+                                        unoptimized
+                                    />
                                     <div>
                                         <h3 className="font-semibold text-slate-900 dark:text-white">My Top 10 Songs</h3>
                                         <p className="text-slate-500 text-sm">10 songs • Today</p>
@@ -212,7 +255,14 @@ export default function DesignChangePage() {
                                     {[mockSong1, mockSong2].map((song, idx) => (
                                         <div key={idx} className="group bg-slate-900/80 backdrop-blur rounded-2xl p-6 border border-white/10 hover:border-purple-500/50 transition-all cursor-pointer hover:shadow-[0_0_30px_rgba(168,85,247,0.3)]">
                                             <div className="relative aspect-square rounded-xl overflow-hidden mb-4">
-                                                <img src={song.coverUrl} alt={song.title} className="w-full h-full object-cover" />
+                                                <Image
+                                                    src={song.coverUrl}
+                                                    alt={song.title}
+                                                    width={300}
+                                                    height={300}
+                                                    className="w-full h-full object-cover"
+                                                    unoptimized
+                                                />
                                                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <div className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center shadow-xl">
                                                         <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
@@ -234,7 +284,14 @@ export default function DesignChangePage() {
                             {/* Ranking Card */}
                             <div className="bg-slate-900/80 backdrop-blur rounded-2xl p-6 border border-white/10">
                                 <div className="flex items-center gap-4 mb-4">
-                                    <img src={mockSong1.coverUrl} alt="" className="w-20 h-20 rounded-xl ring-2 ring-purple-500/50" />
+                                    <Image
+                                        src={mockSong1.coverUrl}
+                                        alt=""
+                                        width={80}
+                                        height={80}
+                                        className="w-20 h-20 rounded-xl ring-2 ring-purple-500/50"
+                                        unoptimized
+                                    />
                                     <div>
                                         <h3 className="text-xl font-bold text-white">My Top 10 Songs</h3>
                                         <p className="text-slate-400">10 songs • Created today</p>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { compareRankings, type ComparisonResult } from '@/lib/ranking/compareRankings'
+import { compareRankings, type ComparisonResult, type SharedSongComparison } from '@/lib/ranking/compareRankings'
 import { NavHeader } from '@/components/NavHeader'
 
 interface RankedSong {
@@ -131,6 +131,8 @@ export default function ComparePage() {
     return 'bg-[#ff6b6b]'
   }
 
+  const totalPossibleMatches = Math.max(yourRanking.song_count, theirRanking.song_count)
+
   return (
     <div className="min-h-screen bg-[#fffdf5]">
       <NavHeader />
@@ -146,11 +148,11 @@ export default function ComparePage() {
           {/* Similarity Score */}
           <div className="nb-card p-6 md:p-8 text-center mb-8">
             <h2 className="text-xl font-black uppercase mb-4">Similarity Score</h2>
-            <div className={`inline-block px-8 py-4 border-4 border-black font-black text-5xl ${getSimilarityColor(comparison.similarityScore)} shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]`}>
-              {comparison.similarityScore}%
+            <div className={`inline-block px-8 py-4 border-4 border-black font-black text-5xl ${getSimilarityColor(comparison.similarity)} shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]`}>
+              {comparison.similarity}%
             </div>
             <p className="font-bold text-gray-600 mt-4">
-              {comparison.matchedSongs} of {comparison.totalSongs} songs match between rankings
+              {comparison.sharedSongs.length} common songs found between rankings
             </p>
           </div>
 
@@ -173,34 +175,34 @@ export default function ComparePage() {
           </div>
 
           {/* Matched Songs */}
-          {comparison.matchedSongs > 0 && (
+          {comparison.sharedSongs.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-2xl font-black uppercase mb-4">Matched Songs ({comparison.matchedSongs})</h2>
+              <h2 className="text-2xl font-black uppercase mb-4">Common Songs ({comparison.sharedSongs.length})</h2>
               <div className="space-y-3">
-                {comparison.songComparisons.filter(c => c.inBoth).map((songComparison) => (
-                  <div key={songComparison.song.title} className="nb-card-sm p-4">
+                {comparison.sharedSongs.map((shared: SharedSongComparison) => (
+                  <div key={`${shared.song.title}-${shared.song.artist}`} className="nb-card-sm p-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 bg-[#00d4ff] border-2 border-black flex items-center justify-center font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                          #{songComparison.yourRank || '?'}
+                          #{shared.yourRank}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-black truncate">{songComparison.song.title}</p>
-                          <p className="text-sm font-bold text-gray-600 truncate">{songComparison.song.artist}</p>
+                          <p className="font-black truncate">{shared.song.title}</p>
+                          <p className="text-sm font-bold text-gray-600 truncate">{shared.song.artist}</p>
                         </div>
                       </div>
                       <div className="text-center">
                         <div className="inline-block bg-white border-2 border-black px-4 py-2 font-black">
-                          {Math.abs((songComparison.yourRank || 0) - (songComparison.theirRank || 0))} {Math.abs((songComparison.yourRank || 0) - (songComparison.theirRank || 0)) === 1 ? 'spot' : 'spots'} apart
+                          {shared.diffAmount} {shared.diffAmount === 1 ? 'spot' : 'spots'} {shared.indicator === 'same' ? 'the same' : 'apart'}
                         </div>
                       </div>
                       <div className="flex items-center gap-3 justify-end">
                         <div className="flex-1 min-w-0 text-right">
-                          <p className="font-black truncate">{songComparison.song.title}</p>
-                          <p className="text-sm font-bold text-gray-600 truncate">{songComparison.song.artist}</p>
+                          <p className="font-black truncate">{shared.song.title}</p>
+                          <p className="text-sm font-bold text-gray-600 truncate">{shared.song.artist}</p>
                         </div>
                         <div className="w-12 h-12 bg-[#ff90e8] border-2 border-black flex items-center justify-center font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                          #{songComparison.theirRank || '?'}
+                          #{shared.theirRank}
                         </div>
                       </div>
                     </div>
@@ -211,18 +213,15 @@ export default function ComparePage() {
           )}
 
           {/* Only In Your Ranking */}
-          {comparison.songComparisons.filter(c => c.onlyInYours).length > 0 && (
+          {comparison.onlyInYourList.length > 0 && (
             <div className="mb-8">
               <h2 className="text-2xl font-black uppercase mb-4">Only In Your Ranking</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {comparison.songComparisons.filter(c => c.onlyInYours).map((songComparison) => (
-                  <div key={songComparison.song.title} className="nb-card-sm p-3 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#00d4ff] border-2 border-black flex items-center justify-center font-black">
-                      #{songComparison.yourRank}
-                    </div>
+                {comparison.onlyInYourList.map((song) => (
+                  <div key={`${song.title}-${song.artist}`} className="nb-card-sm p-3 flex items-center gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="font-black truncate">{songComparison.song.title}</p>
-                      <p className="text-xs font-bold text-gray-600 truncate">{songComparison.song.artist}</p>
+                      <p className="font-black truncate">{song.title}</p>
+                      <p className="text-xs font-bold text-gray-600 truncate">{song.artist}</p>
                     </div>
                   </div>
                 ))}
@@ -231,18 +230,15 @@ export default function ComparePage() {
           )}
 
           {/* Only In Their Ranking */}
-          {comparison.songComparisons.filter(c => c.onlyInTheirs).length > 0 && (
+          {comparison.onlyInTheirList.length > 0 && (
             <div className="mb-8">
               <h2 className="text-2xl font-black uppercase mb-4">Only In Their Ranking</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {comparison.songComparisons.filter(c => c.onlyInTheirs).map((songComparison) => (
-                  <div key={songComparison.song.title} className="nb-card-sm p-3 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#ff90e8] border-2 border-black flex items-center justify-center font-black">
-                      #{songComparison.theirRank}
-                    </div>
+                {comparison.onlyInTheirList.map((song) => (
+                  <div key={`${song.title}-${song.artist}`} className="nb-card-sm p-3 flex items-center gap-3">
                     <div className="flex-1 min-w-0">
-                      <p className="font-black truncate">{songComparison.song.title}</p>
-                      <p className="text-xs font-bold text-gray-600 truncate">{songComparison.song.artist}</p>
+                      <p className="font-black truncate">{song.title}</p>
+                      <p className="text-xs font-bold text-gray-600 truncate">{song.artist}</p>
                     </div>
                   </div>
                 ))}
