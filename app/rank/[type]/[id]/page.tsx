@@ -450,23 +450,37 @@ export default function RankingFlowPage({
                                 )}
                                 {/* Play button */}
                                 {state.currentItem.previewUrl && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            playPreview(state.currentItem!.id, state.currentItem!.previewUrl)
-                                        }}
-                                        className="absolute bottom-2 right-2 w-12 h-12 bg-black border-2 border-white flex items-center justify-center hover:bg-[#ff90e8] transition-colors"
-                                    >
-                                        {playingTrackId === state.currentItem.id ? (
-                                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                                            </svg>
-                                        ) : (
-                                            <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M8 5v14l11-7z" />
-                                            </svg>
-                                        )}
-                                    </button>
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:bg-black/10 transition-colors">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                playPreview(state.currentItem!.id, state.currentItem!.previewUrl)
+                                            }}
+                                            className={`
+                                                pointer-events-auto
+                                                flex items-center gap-2 px-4 py-2 border-3 border-black font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all
+                                                ${playingTrackId === state.currentItem.id ? 'bg-[#ff90e8] text-black' : 'bg-white text-black'}
+                                            `}
+                                        >
+                                            {playingTrackId === state.currentItem.id ? (
+                                                <>
+                                                    <div className="flex gap-0.5 items-end h-3">
+                                                        <div className="w-1 bg-black animate-[bounce_0.6s_infinite_0s]"></div>
+                                                        <div className="w-1 bg-black animate-[bounce_0.6s_infinite_0.2s]"></div>
+                                                        <div className="w-1 bg-black animate-[bounce_0.6s_infinite_0.4s]"></div>
+                                                    </div>
+                                                    <span>Playing</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M8 5v14l11-7z" />
+                                                    </svg>
+                                                    <span>Listen Preview</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                             <h3 className="font-black text-base md:text-xl uppercase mb-1 truncate leading-tight">{state.currentItem.title}</h3>
@@ -497,23 +511,37 @@ export default function RankingFlowPage({
                                 )}
                                 {/* Play button */}
                                 {comparisonTrack.previewUrl && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation()
-                                            playPreview(comparisonTrack.id, comparisonTrack.previewUrl)
-                                        }}
-                                        className="absolute bottom-2 right-2 w-12 h-12 bg-black border-2 border-white flex items-center justify-center hover:bg-[#ff90e8] transition-colors"
-                                    >
-                                        {playingTrackId === comparisonTrack.id ? (
-                                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                                            </svg>
-                                        ) : (
-                                            <svg className="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M8 5v14l11-7z" />
-                                            </svg>
-                                        )}
-                                    </button>
+                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:bg-black/10 transition-colors">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                playPreview(comparisonTrack.id, comparisonTrack.previewUrl)
+                                            }}
+                                            className={`
+                                                pointer-events-auto
+                                                flex items-center gap-2 px-4 py-2 border-3 border-black font-black uppercase text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all
+                                                ${playingTrackId === comparisonTrack.id ? 'bg-[#ff90e8] text-black' : 'bg-white text-black'}
+                                            `}
+                                        >
+                                            {playingTrackId === comparisonTrack.id ? (
+                                                <>
+                                                    <div className="flex gap-0.5 items-end h-3">
+                                                        <div className="w-1 bg-black animate-[bounce_0.6s_infinite_0s]"></div>
+                                                        <div className="w-1 bg-black animate-[bounce_0.6s_infinite_0.2s]"></div>
+                                                        <div className="w-1 bg-black animate-[bounce_0.6s_infinite_0.4s]"></div>
+                                                    </div>
+                                                    <span>Playing</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M8 5v14l11-7z" />
+                                                    </svg>
+                                                    <span>Listen Preview</span>
+                                                </>
+                                            )}
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                             <h3 className="font-black text-base md:text-xl uppercase mb-1 truncate leading-tight">{comparisonTrack.title}</h3>
