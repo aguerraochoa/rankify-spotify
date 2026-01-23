@@ -13,11 +13,13 @@ export default function LoginPage() {
   // Check if user is already logged in
   useEffect(() => {
     const checkUser = async () => {
+      const urlParams = new URLSearchParams(window.location.search)
+      if (urlParams.has('error')) return
+
       const {
         data: { user },
       } = await supabase.auth.getUser()
       if (user) {
-        const urlParams = new URLSearchParams(window.location.search)
         const nextUrl = urlParams.get('next') || '/'
         router.push(nextUrl)
         router.refresh()
