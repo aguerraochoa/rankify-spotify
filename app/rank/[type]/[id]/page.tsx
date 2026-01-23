@@ -65,6 +65,8 @@ export default function RankingFlowPage({
                             setIsComplete(true)
                         }
                     }
+                } else if (res.status === 401) {
+                    router.push(`/login?next=/rank/${params.type}/${params.id}&error=spotify_expired`)
                 }
             } catch (error) {
                 console.error('Error fetching tracks:', error)

@@ -43,6 +43,8 @@ export default function RankPage() {
             if (res.ok) {
                 const data = await res.json()
                 setPlaylists(data.items || [])
+            } else if (res.status === 401) {
+                router.push('/login?next=/rank&error=spotify_expired')
             }
         } catch (error) {
             console.error('Error fetching playlists:', error)

@@ -35,6 +35,9 @@ export default function LoginPage() {
     if (error === 'auth_failed') {
       setMessage(details || 'Authentication failed. Please try again.')
       window.history.replaceState({}, '', '/login')
+    } else if (error === 'spotify_expired') {
+      setMessage('Your Spotify session has expired. Please log in again to continue.')
+      window.history.replaceState({}, '', '/login')
     }
   }, [])
 
