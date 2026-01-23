@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   description: "Rank your favorite songs and albums using comparison-based logic",
   icons: {
     icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.png', type: 'image/png' },
       { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
     ],
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#4a5d3a',
+  themeColor: '#ffd700',
 };
 
 export default function RootLayout({

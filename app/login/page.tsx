@@ -75,10 +75,12 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-8">
         {/* Logo and Title */}
         <div className="text-center">
-          <div className="inline-block bg-[#ff90e8] border-4 border-black p-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-6 transform -rotate-2">
-            <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-            </svg>
+          <div className="inline-block border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-6 transform -rotate-2 overflow-hidden bg-white">
+            <img
+              src="/logo.png"
+              alt="Rankify Logo"
+              className="w-24 h-24 object-cover scale-110"
+            />
           </div>
           <h1 className="text-5xl md:text-6xl font-black uppercase mb-3">
             Rankify
