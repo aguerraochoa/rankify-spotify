@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -30,13 +30,7 @@ export default function RankPage() {
         checkAuth()
     }, [router, supabase.auth])
 
-    useEffect(() => {
-        if (sourceType === 'playlist') {
-            fetchPlaylists()
-        }
-    }, [sourceType])
-
-    const fetchPlaylists = async () => {
+    const fetchPlaylists = useCallback(async () => {
         setLoading(true)
         try {
             const res = await fetch('/api/spotify/playlists')
@@ -51,7 +45,13 @@ export default function RankPage() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [router])
+
+    useEffect(() => {
+        if (sourceType === 'playlist') {
+            fetchPlaylists()
+        }
+    }, [sourceType, fetchPlaylists])
 
     const searchAlbums = async () => {
         if (!searchQuery.trim()) return

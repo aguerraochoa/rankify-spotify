@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
@@ -77,10 +78,13 @@ export default function LoginPage() {
         {/* Logo and Title */}
         <div className="text-center">
           <div className="inline-block border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-6 transform -rotate-2 overflow-hidden bg-white">
-            <img
+            <Image
               src="/logo.png"
               alt="Rankify Logo"
+              width={96}
+              height={96}
               className="w-24 h-24 object-cover scale-110"
+              priority
             />
           </div>
           <h1 className="text-5xl md:text-6xl font-black uppercase mb-3">

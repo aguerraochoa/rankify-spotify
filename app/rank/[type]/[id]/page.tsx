@@ -76,7 +76,7 @@ export default function RankingFlowPage({
         }
 
         fetchTracks()
-    }, [params])
+    }, [params, router])
 
     // Binary insertion logic
     const handleChoice = useCallback((preferCurrent: boolean) => {

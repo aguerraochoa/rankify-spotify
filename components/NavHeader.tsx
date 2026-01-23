@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 
 interface NavHeaderProps {
@@ -52,10 +53,13 @@ export function NavHeader({
                         <Link href="/" className="flex items-center gap-2 group">
                             {/* Neubrutalism Logo */}
                             <div className="w-10 h-10 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center group-hover:translate-x-[1px] group-hover:translate-y-[1px] group-hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all overflow-hidden bg-white">
-                                <img
+                                <Image
                                     src="/logo.png"
                                     alt="Rankify Logo"
+                                    width={40}
+                                    height={40}
                                     className="w-full h-full object-cover scale-110"
+                                    priority
                                 />
                             </div>
                             <span className="font-black text-xl uppercase hidden sm:inline tracking-tight">Rankify</span>
