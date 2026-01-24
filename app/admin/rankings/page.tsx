@@ -194,91 +194,79 @@ function AdminRankingsPageContent() {
           {/* Filters */}
           <div className="flex flex-wrap items-center gap-3 mb-8">
             <span className="font-black uppercase text-xs">Filter Status:</span>
-            <button
-              onClick={() => setStatusFilter('all')}
-              className={`px-4 py-2 font-black uppercase text-xs border-2 border-black transition-all ${statusFilter === 'all' ? 'bg-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'bg-white hover:bg-gray-100'
-                }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setStatusFilter('completed')}
-              className={`px-4 py-2 font-black uppercase text-xs border-2 border-black transition-all ${statusFilter === 'completed' ? 'bg-[#4ade80] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'bg-white hover:bg-gray-100'
-                }`}
-            >
-              Completed
-            </button>
-            <button
-              onClick={() => setStatusFilter('draft')}
-              className={`px-4 py-2 font-black uppercase text-xs border-2 border-black transition-all ${statusFilter === 'draft' ? 'bg-[#ffd700] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : 'bg-white hover:bg-gray-100'
-                }`}
-            >
-              Drafts
-            </button>
+            {(['all', 'completed', 'draft'] as const).map((status) => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-4 py-2 font-black uppercase text-xs border-2 border-black transition-all ${statusFilter === status ? 'bg-black text-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'bg-white hover:bg-gray-100'
+                  }`}
+              >
+                {status === 'all' ? 'All' : status === 'draft' ? 'Drafts' : 'Completed'}
+              </button>
+            ))}
           </div>
 
           {/* Rankings List */}
-          <div className="nb-card p-0 bg-white overflow-hidden overflow-x-auto">
-            <table className="w-full text-left min-w-[700px]">
-              <thead className="bg-black text-white border-b-4 border-black font-black uppercase text-xs">
-                <tr>
-                  <th className="px-6 py-4">Ranking Name</th>
-                  <th className="px-6 py-4">Owner</th>
-                  <th className="px-6 py-4">Songs</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4">Created</th>
-                  <th className="px-6 py-4">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y-4 divide-black font-bold">
-                {rankings.map((ranking) => (
-                  <tr key={ranking.id} className="hover:bg-[#fffdf5] transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="uppercase font-black truncate max-w-[200px]" title={ranking.name || 'Unnamed'}>
-                        {ranking.name || 'Unnamed'}
-                      </div>
+          <div className="space-y-4">
+            {rankings.length > 0 ? rankings.map((ranking) => (
+              <div
+                key={ranking.id}
+                className="nb-card flex flex-col md:flex-row items-start md:items-center gap-5 md:gap-6 p-5 bg-white border-2 border-black"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center border-2 border-black bg-gradient-to-br from-[#ff90e8] to-[#ffd700] text-2xl font-black">
+                    #{ranking.song_count}
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black uppercase tracking-tight truncate max-w-[400px]">{ranking.name || 'Unnamed Ranking'}</h3>
+                    <p className="text-xs uppercase tracking-wide text-gray-500">
+                      {ranking.owner_display_name || ranking.owner_username || 'Anonymous'} · {new Date(ranking.created_at).toLocaleDateString()}
+                    </p>
+                    <div className="flex gap-2 mt-2 flex-wrap">
                       {ranking.is_public && (
-                        <span className="text-[10px] bg-[#4ade80] border border-black px-1 py-0.5 mt-1 inline-block uppercase font-black">Public</span>
+                        <span className="px-2 py-0.5 border-2 border-black font-black uppercase text-[10px] bg-[#4ade80]">Public</span>
                       )}
-                    </td>
-                    <td className="px-6 py-4 text-xs">
-                      <div className="truncate max-w-[150px]">{ranking.owner_username || ranking.owner_display_name || 'Anonymous'}</div>
-                      <div className="text-[10px] text-gray-400 lowercase truncate max-w-[150px]">{ranking.owner_email}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-black">{ranking.song_count}</td>
-                    <td className="px-6 py-4">
-                      <span className={`text-[10px] border border-black px-2 py-1 uppercase font-black ${ranking.status === 'draft' ? 'bg-[#ffd700]' : 'bg-white'
-                        }`}>
+                      <span className={`px-2 py-0.5 border-2 border-black font-black uppercase text-[10px] ${ranking.status === 'draft' ? 'bg-[#ffd700]' : 'bg-white'}`}>
                         {ranking.status}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-[10px] uppercase">{new Date(ranking.created_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => {
-                            setSelectedRanking(ranking)
-                            router.push(`/admin/rankings?rankingId=${ranking.id}`, { scroll: false })
-                          }}
-                          className="nb-button-sm text-[10px] px-2 py-1 bg-white hover:bg-black hover:text-white"
-                        >
-                          View
-                        </button>
-                        <button
-                          onClick={() => handleDelete(ranking.id)}
-                          disabled={deleting === ranking.id}
-                          className="nb-button-sm text-[10px] px-2 py-1 bg-[#ff6b6b] disabled:opacity-50"
-                        >
-                          {deleting === ranking.id ? '...' : 'Del'}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {rankings.length === 0 && (
-              <div className="p-20 text-center font-black uppercase text-gray-400">No rankings found</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex-1 grid grid-cols-2 gap-6 text-[10px] uppercase tracking-widest text-gray-500">
+                  <div>
+                    <p className="text-3xl font-black text-black">{ranking.song_count}</p>
+                    <p>Songs</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-black text-black">{new Date(ranking.created_at).toLocaleDateString()}</p>
+                    <p>Created</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-start md:items-end gap-2">
+                  <button
+                    onClick={() => {
+                      setSelectedRanking(ranking)
+                      router.push(`/admin/rankings?rankingId=${ranking.id}`, { scroll: false })
+                    }}
+                    className="px-5 py-2 nb-button-sm bg-[#ffd700] text-black"
+                  >
+                    Inspect
+                  </button>
+                  <button
+                    onClick={() => handleDelete(ranking.id)}
+                    disabled={deleting === ranking.id}
+                    className="px-5 py-2 nb-button-sm bg-[#ff6b6b] text-black disabled:opacity-50"
+                  >
+                    {deleting === ranking.id ? 'Deleting...' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            )) : (
+              <div className="p-12 text-center font-black uppercase text-gray-500 border-2 border-dashed border-gray-300 rounded-xl">
+                No rankings found
+              </div>
             )}
           </div>
         </div>
@@ -402,4 +390,3 @@ export default function AdminRankingsPage() {
     </Suspense>
   )
 }
-

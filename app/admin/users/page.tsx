@@ -160,59 +160,69 @@ function AdminUsersPageContent() {
           </form>
 
           {/* Users List */}
-          <div className="nb-card p-0 bg-white overflow-hidden overflow-x-auto">
-            <table className="w-full text-left min-w-[700px]">
-              <thead className="bg-black text-white border-b-4 border-black font-black uppercase text-xs">
-                <tr>
-                  <th className="px-6 py-4">User Info</th>
-                  <th className="px-6 py-4">Stats</th>
-                  <th className="px-6 py-4">Created</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y-4 divide-black font-bold">
-                {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-[#fffdf5] transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#4ade80] border-2 border-black flex items-center justify-center font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                          {user.display_name?.[0] || user.username?.[0] || user.email?.[0] || '?'}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="uppercase font-black text-sm truncate max-w-[200px]">
-                            {user.display_name || user.username || 'Anonymous'}
-                            {user.is_admin && (
-                              <span className="ml-2 text-[8px] bg-black text-white px-1 py-0.5 align-middle">ADMIN</span>
-                            )}
-                          </div>
-                          <div className="text-[10px] text-gray-400 lowercase truncate max-w-[200px]">{user.email}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-[10px] uppercase">
-                        <div><span className="font-black">{user.rankings_count}</span> Rankings</div>
-                        <div className="text-gray-400">{user.public_rankings_count} Public • {user.drafts_count} Drafts</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-[10px] uppercase italic text-gray-500">{new Date(user.created_at).toLocaleDateString()}</td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={() => {
-                          setSelectedUser(user)
-                          router.push(`/admin/users?userId=${user.id}`, { scroll: false })
-                        }}
-                        className="nb-button-sm text-[10px] bg-white hover:bg-black hover:text-white"
-                      >
-                        Details
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-4">
+            {users.map((user) => (
+              <div key={user.id} className="nb-card flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 px-4 py-4 md:px-6 md:py-5 bg-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-[#4ade80] border-2 border-black flex items-center justify-center font-black text-lg shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                    {user.display_name?.[0] || user.username?.[0] || user.email?.[0] || '?'}
+                  </div>
+                  <div>
+                    <div className="uppercase font-black text-base tracking-wide flex items-center gap-2">
+                      {user.display_name || user.username || 'Anonymous'}
+                      {user.is_admin && (
+                        <span className="text-[9px] bg-black text-white px-2 py-0.5 tracking-wider">ADMIN</span>
+                      )}
+                    </div>
+                    <p className="text-xs font-bold text-gray-600 lowercase">{user.email}</p>
+                  </div>
+                </div>
+
+                <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] uppercase tracking-widest">
+                  <div>
+                    <p className="text-2xl font-black">{user.rankings_count}</p>
+                    <p className="text-gray-500">rankings</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black">{user.public_rankings_count}</p>
+                    <p className="text-gray-500">public</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black">{user.drafts_count}</p>
+                    <p className="text-gray-500">drafts</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-black">{user.followers_count}</p>
+                    <p className="text-gray-500">followers</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col items-start md:items-end gap-2">
+                  <span className="text-[10px] uppercase italic text-gray-400">{new Date(user.created_at).toLocaleDateString()}</span>
+                  <div className="flex gap-2">
+                    <Link
+                      href={`/users/${user.id}`}
+                      className="px-4 py-2 nb-button-sm bg-[#ffd700]"
+                    >
+                      Profile
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setSelectedUser(user)
+                        router.push(`/admin/users?userId=${user.id}`, { scroll: false })
+                      }}
+                      className="px-4 py-2 nb-button-sm bg-[#00d4ff] text-black"
+                    >
+                      Details
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
             {users.length === 0 && (
-              <div className="p-20 text-center font-black uppercase text-gray-400">No users registry</div>
+              <div className="p-12 text-center font-black uppercase text-gray-400 border-2 border-dashed border-gray-300 rounded-xl">
+                No users registered yet.
+              </div>
             )}
           </div>
         </div>
@@ -326,5 +336,4 @@ export default function AdminUsersPage() {
     </Suspense>
   )
 }
-
 

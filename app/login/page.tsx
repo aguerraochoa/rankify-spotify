@@ -8,6 +8,7 @@ import Image from 'next/image'
 export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [authInProgress, setAuthInProgress] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -45,6 +46,9 @@ export default function LoginPage() {
   }, [])
 
   const handleSpotifyLogin = async () => {
+    if (authInProgress) return
+
+    setAuthInProgress(true)
     setLoading(true)
     setMessage('')
 
@@ -69,6 +73,7 @@ export default function LoginPage() {
     if (error) {
       setMessage(error.message)
       setLoading(false)
+      setAuthInProgress(false)
     }
   }
 
