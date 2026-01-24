@@ -10,6 +10,7 @@ interface NavHeaderProps {
     backLabel?: string
     title?: string
     onBack?: () => void
+    showDiscover?: boolean
 }
 
 export function NavHeader({
@@ -17,7 +18,8 @@ export function NavHeader({
     backHref = '/',
     backLabel = 'Back',
     title,
-    onBack
+    onBack,
+    showDiscover = false
 }: NavHeaderProps) {
     const pathname = usePathname()
 
@@ -88,15 +90,17 @@ export function NavHeader({
                     >
                         <span className="hidden sm:inline">My </span>Rankings
                     </Link>
-                    <Link
-                        href="/discover"
-                        className={`px-3 py-2 text-sm font-black uppercase border-2 border-black transition-all ${isActive('/discover')
-                            ? 'bg-[#00d4ff] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-                            : 'bg-white hover:bg-[#00d4ff] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
-                            }`}
-                    >
-                        Discover
-                    </Link>
+                    {showDiscover && (
+                        <Link
+                            href="/discover"
+                            className={`px-3 py-2 text-sm font-black uppercase border-2 border-black transition-all ${isActive('/discover')
+                                ? 'bg-[#00d4ff] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                                : 'bg-white hover:bg-[#00d4ff] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                                }`}
+                        >
+                            Discover
+                        </Link>
+                    )}
                 </div>
             </div>
         </nav>

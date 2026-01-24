@@ -39,6 +39,7 @@ export default function RankingDetailPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [pendingDeleteIndex, setPendingDeleteIndex] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
@@ -187,13 +188,20 @@ export default function RankingDetailPage() {
       return
     }
 
-    if (!confirm(`Remove "${editableSongs[index].title}" from this ranking?`)) {
-      return
-    }
+    setPendingDeleteIndex(index)
+  }
+
+  const confirmDeleteSong = () => {
+    if (pendingDeleteIndex === null) return
 
     const newSongs = [...editableSongs]
-    newSongs.splice(index, 1)
+    newSongs.splice(pendingDeleteIndex, 1)
     setEditableSongs(newSongs)
+    setPendingDeleteIndex(null)
+  }
+
+  const cancelDelete = () => {
+    setPendingDeleteIndex(null)
   }
 
   const handleDelete = async () => {
@@ -434,23 +442,45 @@ export default function RankingDetailPage() {
                   onDragEnd={handleDragEnd}
                   className={`nb-card-sm p-4 flex items-center gap-3 md:gap-4 ${isEditing ? 'cursor-move' : ''} ${draggedIndex === index ? 'opacity-70' : ''}`}
                 >
-                  <span className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center border-2 border-black font-black text-xl flex-shrink-0 ${index === 0 ? 'bg-[#ffd700]' :
-                    index === 1 ? 'bg-[#c0c0c0]' :
-                      index === 2 ? 'bg-[#cd7f32]' :
-                        'bg-white'
-                    }`}>
-                    {index + 1}
-                  </span>
-                  {(song.cover_art_url || song.coverArtUrl) && (
-                    <Image
-                      src={song.cover_art_url || song.coverArtUrl || ''}
-                      alt={song.title}
-                      width={64}
-                      height={64}
-                      className="w-12 h-12 md:w-14 md:h-14 border-2 border-black object-cover flex-shrink-0"
-                      unoptimized
-                    />
+                  {isEditing && (
+                    <div className="flex flex-col gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => moveUp(index)}
+                        disabled={index === 0}
+                        className="w-8 h-8 flex items-center justify-center border-2 border-black bg-white font-black disabled:opacity-30 disabled:cursor-not-allowed"
+                        aria-label="Move up"
+                      >
+                        ↑
+                      </button>
+                      <button
+                        onClick={() => moveDown(index)}
+                        disabled={index === displayedSongs.length - 1}
+                        className="w-8 h-8 flex items-center justify-center border-2 border-black bg-white font-black disabled:opacity-30 disabled:cursor-not-allowed"
+                        aria-label="Move down"
+                      >
+                        ↓
+                      </button>
+                    </div>
                   )}
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className={`w-12 h-12 md:w-14 md:h-14 flex items-center justify-center border-2 border-black font-black text-xl ${index === 0 ? 'bg-[#ffd700]' :
+                      index === 1 ? 'bg-[#c0c0c0]' :
+                        index === 2 ? 'bg-[#cd7f32]' :
+                          'bg-white'
+                      }`}>
+                      {index + 1}
+                    </div>
+                    {(song.cover_art_url || song.coverArtUrl) && (
+                      <Image
+                        src={song.cover_art_url || song.coverArtUrl || ''}
+                        alt={song.title}
+                        width={64}
+                        height={64}
+                        className="w-12 h-12 md:w-14 md:h-14 border-2 border-black object-cover flex-shrink-0"
+                        unoptimized
+                      />
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-black text-base md:text-lg truncate">{song.title}</p>
                     <p className="text-sm md:text-base font-bold text-gray-600 truncate">{song.artist}</p>
@@ -459,39 +489,45 @@ export default function RankingDetailPage() {
                     )}
                   </div>
                   {isEditing && (
-                    <div className="flex items-center gap-2">
-                      <div className="flex flex-col gap-2">
-                        <button
-                          onClick={() => moveUp(index)}
-                          disabled={index === 0}
-                          className="w-8 h-8 flex items-center justify-center border-2 border-black bg-white font-black disabled:opacity-30 disabled:cursor-not-allowed"
-                          aria-label="Move up"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          onClick={() => moveDown(index)}
-                          disabled={index === displayedSongs.length - 1}
-                          className="w-8 h-8 flex items-center justify-center border-2 border-black bg-white font-black disabled:opacity-30 disabled:cursor-not-allowed"
-                          aria-label="Move down"
-                        >
-                          ↓
-                        </button>
-                      </div>
-                      <button
-                        onClick={() => handleDeleteSong(index)}
-                        disabled={displayedSongs.length <= 1}
-                        className="w-8 h-8 flex items-center justify-center border-2 border-black bg-[#ff6b6b] font-black disabled:opacity-30 disabled:cursor-not-allowed"
-                        aria-label="Remove song"
-                        title="Remove song"
-                      >
-                        ×
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => handleDeleteSong(index)}
+                      disabled={displayedSongs.length <= 1}
+                      className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-[#ff6b6b] border-2 border-black font-black disabled:opacity-30 disabled:cursor-not-allowed"
+                      aria-label="Delete song"
+                      title="Remove song"
+                    >
+                      ×
+                    </button>
                   )}
                 </div>
               ))}
             </div>
+
+            {/* Delete confirmation overlay */}
+            {pendingDeleteIndex !== null && (
+              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                <div className="nb-card p-6 max-w-sm w-full bg-white border-2 border-black text-center">
+                  <h3 className="text-xl font-black uppercase mb-2">Remove Song?</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Are you sure you want to remove <span className="font-bold">{displayedSongs[pendingDeleteIndex].title}</span> from the ranking?
+                  </p>
+                  <div className="flex gap-3 justify-center">
+                    <button
+                      onClick={cancelDelete}
+                      className="px-4 py-2 nb-button-outline"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={confirmDeleteSong}
+                      className="px-4 py-2 nb-button bg-[#ff6b6b] text-white"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Actions at bottom - marked class for removal during download */}
             {!isOwner && (

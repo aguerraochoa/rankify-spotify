@@ -63,7 +63,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#fffdf5]">
-      <NavHeader />
+      <NavHeader showDiscover />
 
       <div className="max-w-4xl mx-auto px-4 md:px-6 pt-8 md:pt-16">
         {/* Hero Section */}
