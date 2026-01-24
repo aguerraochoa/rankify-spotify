@@ -9,6 +9,7 @@ import { NavHeader } from '@/components/NavHeader'
 export default function Home() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
   const router = useRouter()
   const supabase = createClient()
 
@@ -26,6 +27,18 @@ export default function Home() {
         if (error || !user) {
           router.push('/login')
           return
+        }
+
+        try {
+          const profileRes = await fetch(`/api/users/${user.id}`)
+          if (profileRes.ok) {
+            const profileData = await profileRes.json()
+            if (profileData.profile?.is_admin) {
+              setIsAdmin(true)
+            }
+          }
+        } catch (profileError) {
+          console.error('Failed to load profile:', profileError)
         }
 
         setUser(user)
@@ -129,6 +142,11 @@ export default function Home() {
           >
             My Profile
           </Link>
+          {isAdmin && (
+            <Link href="/admin" className="nb-button px-6 py-3">
+              Admin Dashboard
+            </Link>
+          )}
           <button
             onClick={async () => {
               await supabase.auth.signOut()
