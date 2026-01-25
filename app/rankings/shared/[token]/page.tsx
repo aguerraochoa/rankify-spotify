@@ -147,7 +147,7 @@ export default function SharedRankingPage() {
         {/* Title Section */}
         <div className="nb-card p-6 md:p-8 mb-6">
           <div className="nb-tag mb-4">SHARED_RANKING</div>
-          <h1 className="text-3xl md:text-4xl font-black uppercase mb-2 truncate">
+          <h1 className="text-3xl md:text-4xl font-black uppercase mb-2 break-words">
             {ranking.name || 'Shared Ranking'}
           </h1>
           {user && (

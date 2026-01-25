@@ -257,7 +257,12 @@ export default function RankingDetailPage() {
         await navigator.clipboard.writeText(shareUrl)
         alert('Share link copied to clipboard!')
       }
-    } catch (err) {
+    } catch (err: any) {
+      // Ignore AbortError which is thrown when the user cancels the share action
+      if (err.name === 'AbortError') {
+        console.log('User cancelled the share action')
+        return
+      }
       console.error('Error sharing:', err)
       alert('Failed to share ranking')
     } finally {
@@ -322,7 +327,7 @@ export default function RankingDetailPage() {
           {/* Header */}
           <div className="nb-card p-6 md:p-8 mb-6">
             <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap mb-2">
                   <span className={`nb-tag text-xs ${ranking.is_public ? 'nb-tag-green' : ''}`}>
                     {ranking.is_public ? '🌐 PUBLIC' : '🔒 PRIVATE'}
@@ -337,7 +342,7 @@ export default function RankingDetailPage() {
                     className="w-full text-3xl md:text-4xl font-black uppercase mb-2 px-4 py-3 nb-input"
                   />
                 ) : (
-                  <h1 className="text-3xl md:text-4xl font-black uppercase mb-2 truncate">
+                  <h1 className="text-3xl md:text-4xl font-black uppercase mb-2 break-words">
                     {ranking.name || 'Untitled Ranking'}
                   </h1>
                 )}
@@ -372,7 +377,7 @@ export default function RankingDetailPage() {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 101.32-3.32m0 1.32a3 3 0 110 2.684m0 0l-6.632 3.316m6.632-6l-6.632-3.316" />
                       </svg>
-                      {sharing ? 'Sharing...' : 'Share'}
+                      Share
                     </button>
                     <button
                       onClick={handleDownload}
