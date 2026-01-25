@@ -12,6 +12,7 @@ export interface Song {
   coverArtUrl?: string
   albumTitle?: string
   musicbrainzId?: string
+  spotifyUri?: string
 }
 
 export interface RankingState {
@@ -51,9 +52,9 @@ export class BinaryInsertionRanker {
         return !existingRankedSongs.some(rankedSong => {
           const titleMatch = normalizeString(newSong.title) === normalizeString(rankedSong.title)
           const artistMatch = normalizeString(newSong.artist) === normalizeString(rankedSong.artist)
-          const albumMatch = (!rankedSong.albumTitle && !newSong.albumTitle) || 
-            (rankedSong.albumTitle && newSong.albumTitle && 
-             normalizeString(rankedSong.albumTitle) === normalizeString(newSong.albumTitle))
+          const albumMatch = (!rankedSong.albumTitle && !newSong.albumTitle) ||
+            (rankedSong.albumTitle && newSong.albumTitle &&
+              normalizeString(rankedSong.albumTitle) === normalizeString(newSong.albumTitle))
           return titleMatch && artistMatch && albumMatch
         })
       })
@@ -116,7 +117,7 @@ export class BinaryInsertionRanker {
         this.comparisons++ // Count this as a comparison to establish initial rank
         this.currentComparison = null
         this.notifyStateChange()
-        
+
         if (this.remaining.length > 0) {
           return this.startNextInsertion()
         }
@@ -135,7 +136,7 @@ export class BinaryInsertionRanker {
     this.ranked = result === 'better'
       ? [song1, song2]
       : [song2, song1]
-    
+
     this.comparisons++
     this.currentComparison = null
     this.notifyStateChange()
@@ -183,11 +184,11 @@ export class BinaryInsertionRanker {
       }
       return this.getState()
     }
-    
+
     if (left > right) {
       // Found insertion point
       this.ranked.splice(left, 0, newSong)
-      
+
       // Remove from remaining (find by ID to be safe)
       const remainingIndex = this.remaining.findIndex(s => s.id === newSong.id)
       if (remainingIndex !== -1) {
@@ -196,7 +197,7 @@ export class BinaryInsertionRanker {
         // Fallback: shift if not found
         this.remaining.shift()
       }
-      
+
       this.currentComparison = null
       this.notifyStateChange()
 
@@ -210,7 +211,7 @@ export class BinaryInsertionRanker {
 
     // When left === right, we still need to compare one more time
     const mid = Math.floor((left + right) / 2)
-    
+
     // Safety check: ensure mid is within bounds
     if (mid < 0 || mid >= this.ranked.length) {
       // Insert at the end if mid is out of bounds
@@ -222,13 +223,13 @@ export class BinaryInsertionRanker {
       }
       this.currentComparison = null
       this.notifyStateChange()
-      
+
       if (this.remaining.length > 0) {
         return this.startNextInsertion()
       }
       return this.getState()
     }
-    
+
     const comparedSong = this.ranked[mid]
 
     this.currentComparison = {
@@ -279,18 +280,18 @@ export class BinaryInsertionRanker {
     // Process the comparison result (no history save here - history was saved when the comparison was created)
     this.comparisons++
     const mid = position
-    
+
     // Get the original search bounds from the comparison state
     // If not available, use the full range (shouldn't happen, but safety check)
     const originalLeft = comparison.searchLeft ?? 0
     const originalRight = comparison.searchRight ?? (this.ranked.length - 1)
-    
+
     // Update search bounds based on comparison result
     // If better: search in [originalLeft, mid-1] (positions before current, within original bounds)
     // If worse: search in [mid+1, originalRight] (positions after current, within original bounds)
     let left: number
     let right: number
-    
+
     if (result === 'better') {
       left = originalLeft
       right = mid - 1
@@ -305,20 +306,20 @@ export class BinaryInsertionRanker {
       // Insert at the position determined by the comparison
       const insertPos = result === 'better' ? mid : mid + 1
       this.ranked.splice(insertPos, 0, newSong)
-      
+
       const remainingIndex = this.remaining.findIndex(s => s.id === newSong.id)
       if (remainingIndex !== -1) {
         this.remaining.splice(remainingIndex, 1)
       }
       this.currentComparison = null
       this.notifyStateChange()
-      
+
       if (this.remaining.length > 0) {
         return this.startNextInsertion()
       }
       return this.getState()
     }
-    
+
     // When left === right, we have one position left - compare with it and insert
     if (left === right) {
       // One final comparison needed

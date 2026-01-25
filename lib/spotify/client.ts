@@ -160,7 +160,7 @@ export class SpotifyClient {
      */
     async createPlaylist(
         name: string,
-        trackIds: string[],
+        uris: string[],
         description: string = 'Created with Rankify'
     ): Promise<{ playlistId: string; playlistUrl: string }> {
         // Get user ID
@@ -185,7 +185,7 @@ export class SpotifyClient {
         }
 
         // Add tracks (Spotify accepts up to 100 URIs per request)
-        const uris = trackIds.map(id => `spotify:track:${id}`);
+        // uris are already passed in correctly
 
         // Add tracks in batches of 100
         for (let i = 0; i < uris.length; i += 100) {

@@ -9,6 +9,7 @@ export interface RankedListSong {
   cover_art_url?: string
   album_title?: string
   album_musicbrainz_id?: string // MusicBrainz release-group ID
+  spotify_uri?: string
   rank: number
 }
 
@@ -45,6 +46,7 @@ export async function saveRankedList(
     cover_art_url: song.coverArtUrl,
     album_title: song.albumTitle,
     album_musicbrainz_id: (song as any).albumId || (song as any).album_musicbrainz_id || null, // Preserve album ID from SongReview
+    spotify_uri: song.spotifyUri,
     rank: index + 1,
   }))
 
@@ -91,6 +93,7 @@ export async function saveDraftRanking(
     cover_art_url: song.coverArtUrl,
     album_title: song.albumTitle,
     album_musicbrainz_id: (song as any).albumId || null,
+    spotify_uri: song.spotifyUri,
     rank: index + 1,
   }))
 

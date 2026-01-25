@@ -10,6 +10,7 @@ interface Song {
     title: string
     artist: string
     coverArtUrl?: string
+    spotifyUri?: string
 }
 
 interface RankingState {
@@ -61,6 +62,7 @@ export default function ReRankPage({
                     title: song.title,
                     artist: song.artist,
                     coverArtUrl: song.cover_art_url || song.coverArtUrl,
+                    spotifyUri: song.spotify_uri || song.spotifyUri,
                 }))
 
                 const shuffled = [...songs].sort(() => Math.random() - 0.5)
