@@ -42,31 +42,47 @@ export default function RankingFlowPage({
         const fetchTracks = async () => {
             setLoading(true)
             try {
-                const endpoint = params.type === 'playlist'
-                    ? `/api/spotify/playlists/${params.id}/tracks`
-                    : `/api/spotify/albums/${params.id}/tracks`
+                const ids = params.id.split(',')
+                let allTracks: SearchResult[] = []
 
-                const res = await fetch(endpoint)
-                if (res.ok) {
-                    const data = await res.json()
-                    setTracks(data)
+                for (const id of ids) {
+                    const endpoint = params.type === 'playlist'
+                        ? `/api/spotify/playlists/${id}/tracks`
+                        : `/api/spotify/albums/${id}/tracks`
 
-                    if (data.length > 0) {
-                        setState({
-                            rankedList: [data[0]],
-                            unrankedList: data.slice(2),
-                            currentItem: data[1] || null,
-                            comparisonIndex: 0,
-                            low: 0,
-                            high: 0,
-                        })
-
-                        if (data.length === 1) {
-                            setIsComplete(true)
-                        }
+                    const res = await fetch(endpoint)
+                    if (res.ok) {
+                        const data = await res.json()
+                        allTracks = [...allTracks, ...data]
+                    } else if (res.status === 401) {
+                        router.push(`/login?next=/rank/${params.type}/${params.id}&error=spotify_expired`)
+                        return
                     }
-                } else if (res.status === 401) {
-                    router.push(`/login?next=/rank/${params.type}/${params.id}&error=spotify_expired`)
+                }
+
+                // Remove duplicates if any
+                const uniqueTracks = Array.from(new Map(allTracks.map(item => [item.id, item])).values())
+
+                // Shuffle tracks to mix them if multiple sources
+                if (ids.length > 1) {
+                    uniqueTracks.sort(() => Math.random() - 0.5)
+                }
+
+                setTracks(uniqueTracks)
+
+                if (uniqueTracks.length > 0) {
+                    setState({
+                        rankedList: [uniqueTracks[0]],
+                        unrankedList: uniqueTracks.slice(2),
+                        currentItem: uniqueTracks[1] || null,
+                        comparisonIndex: 0,
+                        low: 0,
+                        high: 0,
+                    })
+
+                    if (uniqueTracks.length === 1) {
+                        setIsComplete(true)
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching tracks:', error)

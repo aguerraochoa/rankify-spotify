@@ -43,11 +43,24 @@ export class SpotifyClient {
         return response.json();
     }
 
+    private async fetchAllPages<T>(initialEndpoint: string): Promise<T[]> {
+        let allItems: T[] = [];
+        let url: string | null = initialEndpoint;
+
+        while (url) {
+            const data: SpotifyPaging<T> = await this.fetchSpotify<SpotifyPaging<T>>(url);
+            allItems = allItems.concat(data.items);
+            url = data.next;
+        }
+
+        return allItems;
+    }
+
     /**
-     * Get current user's playlists
+     * Get current user's playlists (fetches all available pages)
      */
-    async getUserPlaylists(limit = 50, offset = 0): Promise<SpotifyPaging<SpotifyPlaylist>> {
-        return this.fetchSpotify<SpotifyPaging<SpotifyPlaylist>>(`/me/playlists?limit=${limit}&offset=${offset}`);
+    async getUserPlaylists(): Promise<SpotifyPlaylist[]> {
+        return this.fetchAllPages<SpotifyPlaylist>('/me/playlists?limit=50');
     }
 
     /**

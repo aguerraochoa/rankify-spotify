@@ -16,6 +16,7 @@ export default function LoginPage() {
   useEffect(() => {
     const checkUser = async () => {
       const urlParams = new URLSearchParams(window.location.search)
+      // CRITICAL: Do NOT auto-redirect if there's an error or if we're specifically here to re-auth
       if (urlParams.has('error')) return
 
       const {
@@ -38,11 +39,13 @@ export default function LoginPage() {
 
     if (error === 'auth_failed') {
       setMessage(details || 'Authentication failed. Please try again.')
-      window.history.replaceState({}, '', '/login')
     } else if (error === 'spotify_expired') {
       setMessage('Your Spotify session has expired. Please log in again to continue.')
-      window.history.replaceState({}, '', '/login')
     }
+
+    // We keep the error in the URL for a bit to ensure checkUser sees it
+    // or we just don't clear it at all until the user interacts.
+    // Let's at least not clear it immediately if we want to be safe.
   }, [])
 
   const handleSpotifyLogin = async () => {
@@ -54,19 +57,22 @@ export default function LoginPage() {
 
     const urlParams = new URLSearchParams(window.location.search)
     const nextUrl = urlParams.get('next') || '/'
+    const isError = urlParams.has('error')
 
     // Store nextUrl in a cookie that auth callback can read
-    // Set for 5 minutes, sameSite=Lax for OAuth flow
     document.cookie = `sb-next-url=${encodeURIComponent(nextUrl)}; path=/; max-age=300; SameSite=Lax`
 
     const callbackUrl = new URL('/auth/callback', window.location.origin)
-    // No longer setting ?next= in the URL to keep it simple and consistent for Spotify
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'spotify',
       options: {
         redirectTo: callbackUrl.toString(),
         scopes: 'user-read-email user-read-private playlist-read-private playlist-read-collaborative user-library-read playlist-modify-public playlist-modify-private',
+        queryParams: {
+          // Force the account picker if the user was sent here due to an error
+          show_dialog: isError ? 'true' : 'false'
+        }
       },
     })
 

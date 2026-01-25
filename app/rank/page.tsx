@@ -15,8 +15,13 @@ export default function RankPage() {
     const [playlists, setPlaylists] = useState<SpotifyPlaylist[]>([])
     const [loading, setLoading] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
+    const [playlistFilter, setPlaylistFilter] = useState('')
     const [searchResults, setSearchResults] = useState<any[]>([])
+    const [selectedAlbums, setSelectedAlbums] = useState<any[]>([])
     const [searching, setSearching] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 12
+
     const router = useRouter()
     const supabase = createClient()
 
@@ -61,6 +66,8 @@ export default function RankPage() {
             if (res.ok) {
                 const data = await res.json()
                 setSearchResults(data)
+            } else if (res.status === 401) {
+                router.push('/login?next=/rank&error=spotify_expired')
             }
         } catch (error) {
             console.error('Error searching albums:', error)
@@ -73,6 +80,41 @@ export default function RankPage() {
         const type = sourceType === 'playlist' ? 'playlist' : 'album'
         router.push(`/rank/${type}/${id}?name=${encodeURIComponent(name)}`)
     }
+
+    const toggleAlbumSelection = (album: any) => {
+        setSelectedAlbums(prev => {
+            const exists = prev.find(a => a.id === album.id)
+            if (exists) {
+                return prev.filter(a => a.id !== album.id)
+            } else {
+                return [...prev, album]
+            }
+        })
+    }
+
+    const startRankingAlbums = () => {
+        if (selectedAlbums.length === 0) return
+        const ids = selectedAlbums.map(a => a.id).join(',')
+        const name = selectedAlbums.length === 1
+            ? selectedAlbums[0].title
+            : `${selectedAlbums.length} Albums Combined`
+        router.push(`/rank/album/${ids}?name=${encodeURIComponent(name)}`)
+    }
+
+    // Filter and paginate playlists
+    const filteredPlaylists = playlists.filter(p =>
+        p.name.toLowerCase().includes(playlistFilter.toLowerCase())
+    )
+    const totalPages = Math.ceil(filteredPlaylists.length / itemsPerPage)
+    const displayedPlaylists = filteredPlaylists.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    )
+
+    // Reset pagination when filter changes
+    useEffect(() => {
+        setCurrentPage(1)
+    }, [playlistFilter])
 
     // Source selection view
     if (!sourceType) {
@@ -111,8 +153,8 @@ export default function RankPage() {
                                 <div className="w-16 h-16 bg-[#ff90e8] border-4 border-black flex items-center justify-center mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all">
                                     <span className="text-3xl">💿</span>
                                 </div>
-                                <h2 className="text-xl md:text-2xl font-black uppercase mb-2">Rank an Album</h2>
-                                <p className="font-bold text-gray-600">Search for any album and rank its tracks</p>
+                                <h2 className="text-xl md:text-2xl font-black uppercase mb-2">Rank Albums</h2>
+                                <p className="font-bold text-gray-600">Search for one or more albums and rank their tracks</p>
                             </button>
                         </div>
                     </div>
@@ -127,59 +169,87 @@ export default function RankPage() {
             <div className="min-h-screen bg-[#fffdf5]">
                 <NavHeader
                     title="Select Playlist"
-                    showBack={true}
-                    backLabel="Back"
-                    onBack={() => setSourceType(null)}
                 />
 
                 <div className="p-4 md:p-6">
                     <div className="max-w-4xl mx-auto pt-4">
-                        <div className="mb-6">
-                            <button
-                                onClick={() => setSourceType(null)}
-                                className="nb-button-outline px-3 py-2 text-sm md:hidden"
-                            >
-                                ← Back
-                            </button>
-                        </div>
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+                            <div>
+                                <h1 className="text-2xl md:text-3xl font-black uppercase mb-2">Select a Playlist</h1>
+                                <p className="font-bold text-gray-600">Choose a playlist to rank its songs</p>
+                            </div>
 
-                        <h1 className="text-2xl md:text-3xl font-black uppercase mb-2">Select a Playlist</h1>
-                        <p className="font-bold text-gray-600 mb-6">Choose a playlist to rank its songs</p>
+                            {/* Filter input */}
+                            <div className="w-full md:w-64">
+                                <input
+                                    type="text"
+                                    value={playlistFilter}
+                                    onChange={(e) => setPlaylistFilter(e.target.value)}
+                                    placeholder="Filter by name..."
+                                    className="w-full px-4 py-2 nb-input text-sm"
+                                />
+                            </div>
+                        </div>
 
                         {loading ? (
                             <div className="flex justify-center py-12">
                                 <div className="w-12 h-12 border-4 border-black border-t-[#4ade80] animate-spin"></div>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                                {playlists.map((playlist) => (
-                                    <button
-                                        key={playlist.id}
-                                        onClick={() => selectSource(playlist.id, playlist.name)}
-                                        className="nb-card-sm p-3 text-left group"
-                                    >
-                                        <div className="aspect-square border-2 border-black overflow-hidden mb-3 bg-[#4ade80]">
-                                            {playlist.images?.[0]?.url ? (
-                                                <Image
-                                                    src={playlist.images[0].url}
-                                                    alt={playlist.name}
-                                                    width={300}
-                                                    height={300}
-                                                    className="w-full h-full object-cover"
-                                                    unoptimized
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-4xl">🎵</div>
-                                            )}
-                                        </div>
-                                        <h3 className="font-black text-sm truncate">{playlist.name}</h3>
-                                        <p className="text-xs font-bold text-gray-600">{playlist.tracks?.total || 0} tracks</p>
-                                    </button>
-                                ))}
-                            </div>
+                            <>
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-8">
+                                    {displayedPlaylists.map((playlist) => (
+                                        <button
+                                            key={playlist.id}
+                                            onClick={() => selectSource(playlist.id, playlist.name)}
+                                            className="nb-card-sm p-3 text-left group"
+                                        >
+                                            <div className="aspect-square border-2 border-black overflow-hidden mb-3 bg-[#4ade80]">
+                                                {playlist.images?.[0]?.url ? (
+                                                    <Image
+                                                        src={playlist.images[0].url}
+                                                        alt={playlist.name}
+                                                        width={300}
+                                                        height={300}
+                                                        className="w-full h-full object-cover"
+                                                        unoptimized
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-4xl">🎵</div>
+                                                )}
+                                            </div>
+                                            <h3 className="font-black text-sm truncate">{playlist.name}</h3>
+                                            <p className="text-xs font-bold text-gray-600">{playlist.tracks?.total || 0} tracks</p>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Pagination controls */}
+                                {totalPages > 1 && (
+                                    <div className="flex justify-center items-center gap-4 py-4">
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                            disabled={currentPage === 1}
+                                            className="nb-button-outline px-4 py-2 disabled:opacity-50"
+                                        >
+                                            Prev
+                                        </button>
+                                        <span className="font-black">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
+                                        <button
+                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="nb-button-outline px-4 py-2 disabled:opacity-50"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                )}
+                            </>
                         )}
 
-                        {playlists.length === 0 && !loading && (
+                        {filteredPlaylists.length === 0 && !loading && (
                             <div className="nb-card p-8 text-center">
                                 <p className="font-bold">No playlists found.</p>
                             </div>
@@ -195,25 +265,13 @@ export default function RankPage() {
         return (
             <div className="min-h-screen bg-[#fffdf5]">
                 <NavHeader
-                    title="Search Album"
-                    showBack={true}
-                    backLabel="Back"
-                    onBack={() => setSourceType(null)}
+                    title="Search Albums"
                 />
 
-                <div className="p-4 md:p-6">
+                <div className="p-4 md:p-6 pb-32">
                     <div className="max-w-4xl mx-auto pt-4">
-                        <div className="mb-6">
-                            <button
-                                onClick={() => setSourceType(null)}
-                                className="nb-button-outline px-3 py-2 text-sm md:hidden"
-                            >
-                                ← Back
-                            </button>
-                        </div>
-
-                        <h1 className="text-2xl md:text-3xl font-black uppercase mb-2">Search for an Album</h1>
-                        <p className="font-bold text-gray-600 mb-6">Find any album to rank</p>
+                        <h1 className="text-2xl md:text-3xl font-black uppercase mb-2">Search for Albums</h1>
+                        <p className="font-bold text-gray-600 mb-6">Find and select one or more albums to rank</p>
 
                         {/* Search bar */}
                         <div className="flex gap-3 mb-8">
@@ -236,30 +294,40 @@ export default function RankPage() {
 
                         {/* Search results */}
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-                            {searchResults.map((album) => (
-                                <button
-                                    key={album.id}
-                                    onClick={() => selectSource(album.id, album.title)}
-                                    className="nb-card-sm p-3 text-left group"
-                                >
-                                    <div className="aspect-square border-2 border-black overflow-hidden mb-3 bg-[#ff90e8]">
-                                        {album.coverArtUrl ? (
-                                            <Image
-                                                src={album.coverArtUrl}
-                                                alt={album.title}
-                                                width={300}
-                                                height={300}
-                                                className="w-full h-full object-cover"
-                                                unoptimized
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-4xl">💿</div>
-                                        )}
-                                    </div>
-                                    <h3 className="font-black text-sm truncate">{album.title}</h3>
-                                    <p className="text-xs font-bold text-gray-600 truncate">{album.artist}</p>
-                                </button>
-                            ))}
+                            {searchResults.map((album) => {
+                                const isSelected = selectedAlbums.some(a => a.id === album.id)
+                                return (
+                                    <button
+                                        key={album.id}
+                                        onClick={() => toggleAlbumSelection(album)}
+                                        className={`nb-card-sm p-3 text-left group border-4 ${isSelected ? 'border-[#ff90e8] bg-[#ff90e8]/10' : 'border-black'}`}
+                                    >
+                                        <div className="aspect-square border-2 border-black overflow-hidden mb-3 bg-[#ff90e8] relative">
+                                            {album.coverArtUrl ? (
+                                                <Image
+                                                    src={album.coverArtUrl}
+                                                    alt={album.title}
+                                                    width={300}
+                                                    height={300}
+                                                    className="w-full h-full object-cover"
+                                                    unoptimized
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-4xl">💿</div>
+                                            )}
+                                            {isSelected && (
+                                                <div className="absolute top-2 right-2 bg-[#ff90e8] border-2 border-black w-8 h-8 flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                        </div>
+                                        <h3 className="font-black text-sm truncate">{album.title}</h3>
+                                        <p className="text-xs font-bold text-gray-600 truncate">{album.artist}</p>
+                                    </button>
+                                )
+                            })}
                         </div>
 
                         {searchResults.length === 0 && searchQuery && !searching && (
@@ -269,6 +337,47 @@ export default function RankPage() {
                         )}
                     </div>
                 </div>
+
+                {/* Floating Selection Bar */}
+                {selectedAlbums.length > 0 && (
+                    <div className="fixed bottom-0 left-0 right-0 bg-white border-t-4 border-black p-4 z-50 shadow-[0_-8px_0_0_rgba(0,0,0,0.05)]">
+                        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+                            <div className="flex-1">
+                                <p className="font-black uppercase text-xs mb-2">Selected ({selectedAlbums.length})</p>
+                                <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+                                    {selectedAlbums.map(album => (
+                                        <div key={album.id} className="relative flex-shrink-0 group pt-2 pr-2">
+                                            <div className="w-12 h-12 border-2 border-black overflow-hidden bg-[#ff90e8]">
+                                                {album.coverArtUrl ? (
+                                                    <Image
+                                                        src={album.coverArtUrl}
+                                                        alt=""
+                                                        width={48}
+                                                        height={48}
+                                                        className="w-full h-full object-cover"
+                                                        unoptimized
+                                                    />
+                                                ) : <span className="text-xl flex items-center justify-center h-full">💿</span>}
+                                            </div>
+                                            <button
+                                                onClick={() => toggleAlbumSelection(album)}
+                                                className="absolute top-0 right-0 bg-black text-white w-6 h-6 rounded-none flex items-center justify-center text-xs hover:bg-[#ff6b6b] border-2 border-white z-10"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <button
+                                onClick={startRankingAlbums}
+                                className="nb-button px-6 py-3 whitespace-nowrap"
+                            >
+                                Start Ranking
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         )
     }

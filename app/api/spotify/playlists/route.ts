@@ -4,7 +4,8 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
     const result = await withSpotify(async (spotify) => {
-        return await spotify.getUserPlaylists()
+        const playlists = await spotify.getUserPlaylists();
+        return { items: playlists };
     })
 
     return handleSpotifyResponse(result)
