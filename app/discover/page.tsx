@@ -138,8 +138,14 @@ export default function DiscoverPage() {
                   placeholder="Search by email or username..."
                   className="flex-1 px-4 py-3 nb-input text-lg"
                 />
-                <button type="submit" disabled={loading || !searchQuery.trim()} className="px-6 py-3 nb-button disabled:opacity-50">
-                  {loading ? '...' : 'Search'}
+                <button
+                  type="submit"
+                  disabled={loading || !searchQuery.trim()}
+                  className="w-24 md:w-32 py-3 nb-button disabled:opacity-50 flex items-center justify-center"
+                >
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent animate-spin"></div>
+                  ) : 'Search'}
                 </button>
               </div>
             </form>

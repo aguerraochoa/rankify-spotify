@@ -282,9 +282,11 @@ export default function RankPage() {
                             <button
                                 onClick={searchAlbums}
                                 disabled={searching}
-                                className="px-6 py-3 nb-button disabled:opacity-50"
+                                className="w-24 md:w-32 py-3 nb-button disabled:opacity-50 flex items-center justify-center"
                             >
-                                {searching ? '...' : 'Search'}
+                                {searching ? (
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent animate-spin"></div>
+                                ) : 'Search'}
                             </button>
                         </div>
 
@@ -338,12 +340,6 @@ export default function RankPage() {
                 {selectedAlbums.length > 0 && (
                     <div className="fixed bottom-0 left-0 right-0 bg-white border-t-4 border-black p-4 z-50 shadow-[0_-8px_0_0_rgba(0,0,0,0.05)]">
                         <div className="max-w-4xl mx-auto flex items-center gap-4">
-                            <button
-                                onClick={startRankingAlbums}
-                                className="nb-button px-4 md:px-6 py-3 whitespace-nowrap flex-shrink-0 text-sm md:text-base"
-                            >
-                                Start Ranking
-                            </button>
                             <div className="flex-1 min-w-0">
                                 <p className="font-black uppercase text-[10px] md:text-xs mb-2">Selected ({selectedAlbums.length})</p>
                                 <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
@@ -371,6 +367,12 @@ export default function RankPage() {
                                     ))}
                                 </div>
                             </div>
+                            <button
+                                onClick={startRankingAlbums}
+                                className="nb-button px-4 md:px-6 py-3 whitespace-nowrap flex-shrink-0 text-sm md:text-base"
+                            >
+                                Start Ranking
+                            </button>
                         </div>
                     </div>
                 )}
