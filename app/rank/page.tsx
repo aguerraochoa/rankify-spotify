@@ -29,28 +29,76 @@ export default function RankPage() {
     const supabase = createClient()
 
     useEffect(() => {
-        const checkAuth = async () => {
+        let mounted = true
+        let authCheckPerformed = false
+        
+        const performAuthCheck = async () => {
+            if (authCheckPerformed || !mounted) return
+            authCheckPerformed = true
+            
             try {
+                // Check for session immediately
+                let { data: { session } } = await supabase.auth.getSession()
+                
+                // If no session, wait a bit for it to be available (important after OAuth callback)
+                if (!session) {
+                    let attempts = 0
+                    while (!session && attempts < 5 && mounted) {
+                        await new Promise(resolve => setTimeout(resolve, 300))
+                        const { data } = await supabase.auth.getSession()
+                        session = data.session
+                        attempts++
+                    }
+                }
+                
                 const { data: { user } } = await supabase.auth.getUser()
                 if (!user) {
-                    router.push('/login?next=/rank')
+                    if (mounted) {
+                        router.push('/login?next=/rank')
+                    }
                     return
                 }
+
+                // Refresh router to ensure session is synced after OAuth callback
+                router.refresh()
+
+                // Wait a bit more for session cookies to be fully synced
+                await new Promise(resolve => setTimeout(resolve, 300))
 
                 // Verify Spotify token by attempting a lightweight fetch
                 const res = await fetch('/api/spotify/playlists?limit=1')
                 if (res.status === 401) {
-                    router.push('/login?next=/rank&error=spotify_expired')
+                    if (mounted) {
+                        router.push('/login?next=/rank&error=spotify_expired')
+                    }
                     return
                 }
 
-                setInitializing(false)
+                if (mounted) {
+                    setInitializing(false)
+                }
             } catch (error) {
                 console.error('Initialization error:', error)
-                setInitializing(false)
+                if (mounted) {
+                    setInitializing(false)
+                }
             }
         }
-        checkAuth()
+        
+        // Listen for auth state changes (important after OAuth callback)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session && mounted && !authCheckPerformed) {
+                performAuthCheck()
+            }
+        })
+        
+        // Perform initial check
+        performAuthCheck()
+        
+        return () => {
+            mounted = false
+            subscription.unsubscribe()
+        }
     }, [router, supabase.auth])
 
     const fetchPlaylists = useCallback(async () => {
