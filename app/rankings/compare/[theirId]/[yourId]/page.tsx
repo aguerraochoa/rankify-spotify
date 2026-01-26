@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import LoadingScreen from '@/components/LoadingScreen'
 import { compareRankings, type ComparisonResult, type SharedSongComparison } from '@/lib/ranking/compareRankings'
 import { NavHeader } from '@/components/NavHeader'
 
@@ -102,14 +103,7 @@ export default function ComparePage() {
   }, [yourId, theirId, router, supabase.auth])
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-black border-t-[#ff90e8] animate-spin mx-auto mb-4"></div>
-          <p className="font-bold uppercase">Comparing Rankings...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message="Loading Comparison..." />
   }
 
   if (error || !yourRanking || !theirRanking || !comparison) {

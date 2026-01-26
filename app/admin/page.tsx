@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { NavHeader } from '@/components/NavHeader'
+import LoadingScreen from '@/components/LoadingScreen'
 
 interface AdminStats {
   totalUsers: number
@@ -77,10 +78,7 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen bg-[#fffdf5]">
         <NavHeader title="Admin" />
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="w-16 h-16 border-8 border-black border-t-[#ffd700] animate-spin mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"></div>
-          <p className="font-black uppercase text-xl">Loading Stats...</p>
-        </div>
+        <LoadingScreen message="Loading Dashboard..." fullScreen={false} />
       </div>
     )
   }

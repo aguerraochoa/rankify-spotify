@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { NavHeader } from '@/components/NavHeader'
+import LoadingScreen from '@/components/LoadingScreen'
 
 interface UserProfile {
   id: string
@@ -112,14 +114,7 @@ export default function EditProfilePage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center p-8">
-        <div className="nb-card p-6 text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-black mx-auto mb-4"></div>
-          <p className="font-bold text-gray-700">Loading profile...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message="Loading..." />
   }
 
   if (error && !profile) {

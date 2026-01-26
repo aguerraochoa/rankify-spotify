@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import LoadingScreen from '@/components/LoadingScreen'
 import Link from 'next/link'
 
 function ResetPasswordForm() {
@@ -132,14 +133,11 @@ function ResetPasswordForm() {
   }
 
   if (isValidToken === null) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center p-8 bg-[#fffdf5]">
-        <div className="nb-card p-6 text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-black mx-auto mb-4"></div>
-          <p className="font-bold text-gray-700">Verifying reset link...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message="Verifying reset link..." />
+  }
+
+  if (loading) {
+    return <LoadingScreen message="Resetting Password..." />
   }
 
   if (isValidToken === false) {
@@ -264,14 +262,7 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={
-      <div className="flex min-h-screen flex-col items-center justify-center p-8 bg-[#fffdf5]">
-        <div className="nb-card p-6 text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-black mx-auto mb-4"></div>
-          <p className="font-bold text-gray-700">Loading...</p>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<LoadingScreen message="Loading..." />}>
       <ResetPasswordForm />
     </Suspense>
   )

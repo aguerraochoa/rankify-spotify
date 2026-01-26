@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import LoadingScreen from '@/components/LoadingScreen'
 import { NavHeader } from '@/components/NavHeader'
 
 interface RankedList {
@@ -62,14 +63,7 @@ export default function CompareSelectionPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-black border-t-[#ff90e8] animate-spin mx-auto mb-4"></div>
-          <p className="font-bold uppercase">Loading...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message="Loading Your Rankings..." />
   }
 
   if (error) {

@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { SpotifyPlaylist } from '@/lib/spotify/types'
 import { NavHeader } from '@/components/NavHeader'
+import LoadingScreen from '@/components/LoadingScreen'
 
 type SourceType = 'playlist' | 'album' | null
 
@@ -19,6 +20,7 @@ export default function RankPage() {
     const [searchResults, setSearchResults] = useState<any[]>([])
     const [selectedAlbums, setSelectedAlbums] = useState<any[]>([])
     const [searching, setSearching] = useState(false)
+    const [hasSearched, setHasSearched] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 12
 
@@ -73,6 +75,7 @@ export default function RankPage() {
             console.error('Error searching albums:', error)
         } finally {
             setSearching(false)
+            setHasSearched(true)
         }
     }
 
@@ -165,11 +168,12 @@ export default function RankPage() {
 
     // Playlist selection view
     if (sourceType === 'playlist') {
+        if (loading) {
+            return <LoadingScreen message="Loading playlists..." />
+        }
         return (
             <div className="min-h-screen bg-[#fffdf5]">
-                <NavHeader
-                    title="Select Playlist"
-                />
+                <NavHeader title="Select Playlist" />
 
                 <div className="p-4 md:p-6">
                     <div className="max-w-4xl mx-auto pt-4">
@@ -191,67 +195,59 @@ export default function RankPage() {
                             </div>
                         </div>
 
-                        {loading ? (
-                            <div className="flex justify-center py-12">
-                                <div className="w-12 h-12 border-4 border-black border-t-[#4ade80] animate-spin"></div>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-8">
-                                    {displayedPlaylists.map((playlist) => (
-                                        <button
-                                            key={playlist.id}
-                                            onClick={() => selectSource(playlist.id, playlist.name)}
-                                            className="nb-card-sm p-3 text-left group"
-                                        >
-                                            <div className="aspect-square border-2 border-black overflow-hidden mb-3 bg-[#4ade80]">
-                                                {playlist.images?.[0]?.url ? (
-                                                    <Image
-                                                        src={playlist.images[0].url}
-                                                        alt={playlist.name}
-                                                        width={300}
-                                                        height={300}
-                                                        className="w-full h-full object-cover"
-                                                        unoptimized
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-4xl">🎵</div>
-                                                )}
-                                            </div>
-                                            <h3 className="font-black text-sm truncate">{playlist.name}</h3>
-                                            <p className="text-xs font-bold text-gray-600">{playlist.tracks?.total || 0} tracks</p>
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* Pagination controls */}
-                                {totalPages > 1 && (
-                                    <div className="flex justify-center items-center gap-4 py-4">
-                                        <button
-                                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                            disabled={currentPage === 1}
-                                            className="nb-button-outline px-4 py-2 disabled:opacity-50"
-                                        >
-                                            Prev
-                                        </button>
-                                        <span className="font-black">
-                                            Page {currentPage} of {totalPages}
-                                        </span>
-                                        <button
-                                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                            disabled={currentPage === totalPages}
-                                            className="nb-button-outline px-4 py-2 disabled:opacity-50"
-                                        >
-                                            Next
-                                        </button>
-                                    </div>
-                                )}
-                            </>
-                        )}
-
-                        {filteredPlaylists.length === 0 && !loading && (
+                        {filteredPlaylists.length === 0 ? (
                             <div className="nb-card p-8 text-center">
                                 <p className="font-bold">No playlists found.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-8">
+                                {displayedPlaylists.map((playlist) => (
+                                    <button
+                                        key={playlist.id}
+                                        onClick={() => selectSource(playlist.id, playlist.name)}
+                                        className="nb-card-sm p-3 text-left group"
+                                    >
+                                        <div className="aspect-square border-2 border-black overflow-hidden mb-3 bg-[#4ade80]">
+                                            {playlist.images?.[0]?.url ? (
+                                                <Image
+                                                    src={playlist.images[0].url}
+                                                    alt={playlist.name}
+                                                    width={300}
+                                                    height={300}
+                                                    className="w-full h-full object-cover"
+                                                    unoptimized
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-4xl">🎵</div>
+                                            )}
+                                        </div>
+                                        <h3 className="font-black text-sm truncate">{playlist.name}</h3>
+                                        <p className="text-xs font-bold text-gray-600">{playlist.tracks?.total || 0} tracks</p>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Pagination controls */}
+                        {totalPages > 1 && (
+                            <div className="flex justify-center items-center gap-4 py-4">
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    disabled={currentPage === 1}
+                                    className="nb-button-outline px-4 py-2 disabled:opacity-50"
+                                >
+                                    Prev
+                                </button>
+                                <span className="font-black">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="nb-button-outline px-4 py-2 disabled:opacity-50"
+                                >
+                                    Next
+                                </button>
                             </div>
                         )}
                     </div>
@@ -330,7 +326,7 @@ export default function RankPage() {
                             })}
                         </div>
 
-                        {searchResults.length === 0 && searchQuery && !searching && (
+                        {searchResults.length === 0 && searchQuery && !searching && hasSearched && (
                             <div className="nb-card p-8 text-center">
                                 <p className="font-bold">No albums found. Try a different search.</p>
                             </div>
@@ -341,13 +337,19 @@ export default function RankPage() {
                 {/* Floating Selection Bar */}
                 {selectedAlbums.length > 0 && (
                     <div className="fixed bottom-0 left-0 right-0 bg-white border-t-4 border-black p-4 z-50 shadow-[0_-8px_0_0_rgba(0,0,0,0.05)]">
-                        <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-                            <div className="flex-1">
-                                <p className="font-black uppercase text-xs mb-2">Selected ({selectedAlbums.length})</p>
+                        <div className="max-w-4xl mx-auto flex items-center gap-4">
+                            <button
+                                onClick={startRankingAlbums}
+                                className="nb-button px-4 md:px-6 py-3 whitespace-nowrap flex-shrink-0 text-sm md:text-base"
+                            >
+                                Start Ranking
+                            </button>
+                            <div className="flex-1 min-w-0">
+                                <p className="font-black uppercase text-[10px] md:text-xs mb-2">Selected ({selectedAlbums.length})</p>
                                 <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
                                     {selectedAlbums.map(album => (
                                         <div key={album.id} className="relative flex-shrink-0 group pt-2 pr-2">
-                                            <div className="w-12 h-12 border-2 border-black overflow-hidden bg-[#ff90e8]">
+                                            <div className="w-10 h-10 md:w-12 md:h-12 border-2 border-black overflow-hidden bg-[#ff90e8]">
                                                 {album.coverArtUrl ? (
                                                     <Image
                                                         src={album.coverArtUrl}
@@ -361,7 +363,7 @@ export default function RankPage() {
                                             </div>
                                             <button
                                                 onClick={() => toggleAlbumSelection(album)}
-                                                className="absolute top-0 right-0 bg-black text-white w-6 h-6 rounded-none flex items-center justify-center text-xs hover:bg-[#ff6b6b] border-2 border-white z-10"
+                                                className="absolute top-0 right-0 bg-black text-white w-5 h-5 md:w-6 md:h-6 rounded-none flex items-center justify-center text-[10px] md:text-xs hover:bg-[#ff6b6b] border-2 border-white z-10"
                                             >
                                                 ×
                                             </button>
@@ -369,12 +371,6 @@ export default function RankPage() {
                                     ))}
                                 </div>
                             </div>
-                            <button
-                                onClick={startRankingAlbums}
-                                className="nb-button px-6 py-3 whitespace-nowrap"
-                            >
-                                Start Ranking
-                            </button>
                         </div>
                     </div>
                 )}

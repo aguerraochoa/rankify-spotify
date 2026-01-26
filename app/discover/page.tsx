@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { NavHeader } from '@/components/NavHeader'
+import LoadingScreen from '@/components/LoadingScreen'
 
 interface User {
   id: string
@@ -24,6 +25,7 @@ export default function DiscoverPage() {
   const [users, setUsers] = useState<User[]>([])
   const [followingUsers, setFollowingUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(false)
+  const [hasSearched, setHasSearched] = useState(false)
   const [loadingFollowing, setLoadingFollowing] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
@@ -86,6 +88,7 @@ export default function DiscoverPage() {
       setError(err.message || 'Failed to search users')
     } finally {
       setLoading(false)
+      setHasSearched(true)
     }
   }
 
@@ -189,7 +192,7 @@ export default function DiscoverPage() {
                     </Link>
                   ))}
                 </div>
-              ) : searchQuery.trim() && !loading ? (
+              ) : searchQuery.trim() && !loading && hasSearched ? (
                 <div className="nb-card p-12 text-center">
                   <span className="text-6xl mb-4 block">🔍</span>
                   <p className="font-bold text-gray-600">No users found</p>
@@ -202,9 +205,8 @@ export default function DiscoverPage() {
           {activeTab === 'following' && (
             <>
               {loadingFollowing ? (
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 border-4 border-black border-t-[#ff90e8] animate-spin mx-auto mb-4"></div>
-                  <p className="font-bold uppercase">Loading...</p>
+                <div className="py-16">
+                  <LoadingScreen message="Loading..." fullScreen={false} />
                 </div>
               ) : followingUsers.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -258,6 +260,6 @@ export default function DiscoverPage() {
           )}
         </div>
       </div>
-    </div>
+    </div >
   )
 }

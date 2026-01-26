@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import LoadingScreen from '@/components/LoadingScreen'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 
@@ -81,6 +83,10 @@ export default function LoginPage() {
       setLoading(false)
       setAuthInProgress(false)
     }
+  }
+
+  if (loading) {
+    return <LoadingScreen />
   }
 
   return (

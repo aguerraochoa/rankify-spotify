@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { NavHeader } from '@/components/NavHeader'
+import LoadingScreen from '@/components/LoadingScreen'
 
 interface RankedList {
   id: string
@@ -80,14 +81,7 @@ export default function RankingsPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-black border-t-[#ff90e8] animate-spin mx-auto mb-4"></div>
-          <p className="font-bold uppercase">Loading Your Rankings...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message="Loading Your Rankings..." />
   }
 
   if (error) {
@@ -182,8 +176,8 @@ export default function RankingsPage() {
                           className="flex items-center gap-2 p-2 bg-white border-2 border-black"
                         >
                           <span className={`w-6 h-6 flex items-center justify-center border border-black text-xs font-black ${index === 0 ? 'bg-[#ffd700]' :
-                              index === 1 ? 'bg-[#c0c0c0]' :
-                                'bg-[#cd7f32]'
+                            index === 1 ? 'bg-[#c0c0c0]' :
+                              'bg-[#cd7f32]'
                             }`}>
                             {index + 1}
                           </span>

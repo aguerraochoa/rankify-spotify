@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { NavHeader } from '@/components/NavHeader'
+import LoadingScreen from '@/components/LoadingScreen'
 
 interface AdminUser {
   id: string
@@ -29,6 +30,7 @@ function AdminUsersPageContent() {
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null)
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [hasSearched, setHasSearched] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
@@ -93,6 +95,7 @@ function AdminUsersPageContent() {
       setError(err.message || 'Failed to search users')
     } finally {
       setLoading(false)
+      setHasSearched(true)
     }
   }
 
@@ -100,10 +103,7 @@ function AdminUsersPageContent() {
     return (
       <div className="min-h-screen bg-[#fffdf5]">
         <NavHeader title="Admin Users" />
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="w-16 h-16 border-8 border-black border-t-[#ffd700] animate-spin mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"></div>
-          <p className="font-black uppercase text-xl">Loading Users...</p>
-        </div>
+        <LoadingScreen message="Loading Users..." fullScreen={false} />
       </div>
     )
   }
@@ -221,7 +221,7 @@ function AdminUsersPageContent() {
             ))}
             {users.length === 0 && (
               <div className="p-12 text-center font-black uppercase text-gray-400 border-2 border-dashed border-gray-300 rounded-xl">
-                No users registered yet.
+                {hasSearched ? 'No users found matching your search.' : 'No users registered yet.'}
               </div>
             )}
           </div>
@@ -326,10 +326,7 @@ export default function AdminUsersPage() {
     <Suspense fallback={
       <div className="min-h-screen bg-[#fffdf5]">
         <NavHeader title="Admin Users" />
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="w-16 h-16 border-8 border-black border-t-[#ffd700] animate-spin mb-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"></div>
-          <p className="font-black uppercase text-xl">Loading Users...</p>
-        </div>
+        <LoadingScreen message="Loading Users..." fullScreen={false} />
       </div>
     }>
       <AdminUsersPageContent />

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import LoadingScreen from '@/components/LoadingScreen'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { NavHeader } from '@/components/NavHeader'
@@ -52,14 +53,8 @@ export default function Home() {
   }, [router, supabase.auth])
 
   if (loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-[#fffdf5]">
-        <div className="w-12 h-12 border-4 border-black border-t-[#ff90e8] animate-spin"></div>
-      </main>
-    )
+    return <LoadingScreen />
   }
-
-  if (!user) return null
 
   return (
     <main className="min-h-screen bg-[#fffdf5]">

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import LoadingScreen from '@/components/LoadingScreen'
 
 interface RankedSong {
   musicbrainz_id?: string
@@ -77,14 +78,7 @@ export default function SharedRankingPage() {
   }, [shareToken])
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-black border-t-[#ff90e8] animate-spin mx-auto mb-4"></div>
-          <p className="font-bold uppercase">Loading Ranking...</p>
-        </div>
-      </div>
-    )
+    return <LoadingScreen message="Loading Ranking..." />
   }
 
   if (error || !ranking) {
