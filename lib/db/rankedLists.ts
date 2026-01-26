@@ -1,5 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
-import type { Song, RankingState } from '@/lib/ranking/binaryInsertion'
+
+interface Song {
+  id: string
+  title: string
+  artist: string
+  coverArtUrl?: string
+  albumTitle?: string
+  albumId?: string
+  musicbrainzId?: string
+  spotifyUri?: string
+}
 
 export interface RankedListSong {
   song_id?: string // If song exists in DB
@@ -503,4 +513,3 @@ export async function getRankedListForTemplate(
 
   return data
 }
-
