@@ -491,7 +491,7 @@ export default function RankingFlowPage({
                             VS_MODE_ACTIVE
                         </div>
                         <h2 className="text-2xl md:text-4xl font-black uppercase">
-                            Choose Your Fighter
+                            Choose Your Song
                         </h2>
                     </div>
 

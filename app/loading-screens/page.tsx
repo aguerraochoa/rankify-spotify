@@ -95,13 +95,13 @@ const LoadingScreens = () => {
             component: (
                 <div className="flex flex-col items-center justify-center p-12 bg-[#ffd700] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
                     <div className="flex items-center gap-4 mb-6">
-                        {/* Fighter A */}
+                        {/* Song A */}
                         <div className="w-16 h-16 bg-[#00d4ff] border-4 border-black animate-[ping_1.5s_infinite] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center">
                             <span className="font-black text-2xl">A</span>
                         </div>
                         {/* VS Badge */}
                         <div className="bg-black text-white font-black px-3 py-1 rotate-12 border-2 border-white text-xl">VS</div>
-                        {/* Fighter B */}
+                        {/* Song B */}
                         <div className="w-16 h-16 bg-[#ff6b6b] border-4 border-black animate-[ping_1.5s_infinite_0.75s] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center">
                             <span className="font-black text-2xl">B</span>
                         </div>

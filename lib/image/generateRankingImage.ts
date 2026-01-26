@@ -171,7 +171,7 @@ export async function generateRankingImage(ranking: RankingData): Promise<void> 
 
   ctx.font = '10px monospace'
   ctx.fillStyle = '#999999'
-  ctx.fillText('rankify-music.vercel.app', width / 2, y)
+  ctx.fillText('rankify-spotify.vercel.app', width / 2, y)
   // No extra space after URL - padding will be added in height calculation
 
   // Trim canvas to actual content height (add padding at bottom to match top)
@@ -635,7 +635,7 @@ export async function generateComparisonImage(comparison: ComparisonData): Promi
 
   ctx.font = '10px monospace'
   ctx.fillStyle = '#999999'
-  ctx.fillText('rankify-music.vercel.app', width / 2, y)
+  ctx.fillText('rankify-spotify.vercel.app', width / 2, y)
 
   // Trim canvas to actual content height
   const actualHeight = Math.ceil(y + padding + 35)

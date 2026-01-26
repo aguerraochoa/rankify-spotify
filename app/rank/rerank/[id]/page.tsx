@@ -346,7 +346,7 @@ export default function ReRankPage({
                         <div className="inline-block bg-[#ff90e8] border-2 border-black px-4 py-2 font-black text-sm uppercase transform -rotate-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-4">
                             RE-RANK_MODE
                         </div>
-                        <h2 className="text-2xl md:text-4xl font-black uppercase">Choose Your Fighter</h2>
+                        <h2 className="text-2xl md:text-4xl font-black uppercase">Choose Your Song</h2>
                     </div>
 
                     <div className="max-w-3xl mx-auto grid grid-cols-2 gap-3 md:gap-6 mb-4 relative">
