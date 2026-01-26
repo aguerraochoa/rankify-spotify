@@ -15,6 +15,7 @@ export default function RankPage() {
     const [sourceType, setSourceType] = useState<SourceType>(null)
     const [playlists, setPlaylists] = useState<SpotifyPlaylist[]>([])
     const [loading, setLoading] = useState(false)
+    const [initializing, setInitializing] = useState(true)
     const [searchQuery, setSearchQuery] = useState('')
     const [playlistFilter, setPlaylistFilter] = useState('')
     const [searchResults, setSearchResults] = useState<any[]>([])
@@ -29,9 +30,24 @@ export default function RankPage() {
 
     useEffect(() => {
         const checkAuth = async () => {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) {
-                router.push('/login?next=/rank')
+            try {
+                const { data: { user } } = await supabase.auth.getUser()
+                if (!user) {
+                    router.push('/login?next=/rank')
+                    return
+                }
+
+                // Verify Spotify token by attempting a lightweight fetch
+                const res = await fetch('/api/spotify/playlists?limit=1')
+                if (res.status === 401) {
+                    router.push('/login?next=/rank&error=spotify_expired')
+                    return
+                }
+
+                setInitializing(false)
+            } catch (error) {
+                console.error('Initialization error:', error)
+                setInitializing(false)
             }
         }
         checkAuth()
@@ -118,6 +134,11 @@ export default function RankPage() {
     useEffect(() => {
         setCurrentPage(1)
     }, [playlistFilter])
+
+    // Initial loading gate
+    if (initializing) {
+        return <LoadingScreen message="Checking session..." />
+    }
 
     // Source selection view
     if (!sourceType) {
