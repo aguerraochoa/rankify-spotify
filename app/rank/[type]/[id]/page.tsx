@@ -73,9 +73,10 @@ export default function RankingFlowPage({
                 // Remove duplicates if any
                 const uniqueTracks = Array.from(new Map(allTracks.map(item => [item.id, item])).values())
 
-                // Shuffle tracks to mix them if multiple sources
-                if (ids.length > 1) {
-                    uniqueTracks.sort(() => Math.random() - 0.5)
+                // Always shuffle tracks using Fisher-Yates algorithm for better randomization
+                for (let i = uniqueTracks.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [uniqueTracks[i], uniqueTracks[j]] = [uniqueTracks[j], uniqueTracks[i]];
                 }
 
                 setTracks(uniqueTracks)
