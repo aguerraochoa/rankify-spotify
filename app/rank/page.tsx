@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { SpotifyPlaylist } from '@/lib/spotify/types'
 import { NavHeader } from '@/components/NavHeader'
 import LoadingScreen from '@/components/LoadingScreen'
+import { RetroBouncingDots } from '@/components/RetroBouncingDots'
 
 type SourceType = 'playlist' | 'album' | null
 
@@ -354,7 +355,7 @@ export default function RankPage() {
                                 className="w-24 md:w-32 py-3 nb-button disabled:opacity-50 flex items-center justify-center"
                             >
                                 {searching ? (
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent animate-spin"></div>
+                                    <RetroBouncingDots size="sm" />
                                 ) : 'Search'}
                             </button>
                         </div>

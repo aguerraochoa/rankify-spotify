@@ -456,7 +456,7 @@ export default function RankingFlowPage({
                 <div className="nb-card p-8 text-center max-w-md">
                     <p className="font-bold mb-6">Not enough tracks to rank.</p>
                     <p className="text-sm font-bold text-gray-600 mb-6">
-                        The selected albums don't have enough tracks to create a ranking. Please try selecting different albums.
+                        The selected albums don&apos;t have enough tracks to create a ranking. Please try selecting different albums.
                     </p>
                     <button
                         onClick={() => router.push('/rank')}

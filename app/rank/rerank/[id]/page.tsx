@@ -310,7 +310,7 @@ export default function ReRankPage({
                 <div className="nb-card p-8 text-center max-w-md">
                     <p className="font-bold mb-6">Not enough tracks to rank.</p>
                     <p className="text-sm font-bold text-gray-600 mb-6">
-                        This ranking doesn't have enough tracks to re-rank. Please try a different ranking.
+                        This ranking doesn&apos;t have enough tracks to re-rank. Please try a different ranking.
                     </p>
                     <button
                         onClick={() => router.push('/rankings')}
