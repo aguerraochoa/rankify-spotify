@@ -54,6 +54,7 @@ export default function RankingFlowPage({
             try {
                 const ids = params.id.split(',')
                 let allTracks: SearchResult[] = []
+                let hasError = false
 
                 for (const id of ids) {
                     const endpoint = params.type === 'playlist'
@@ -63,10 +64,17 @@ export default function RankingFlowPage({
                     const res = await fetch(endpoint)
                     if (res.ok) {
                         const data = await res.json()
-                        allTracks = [...allTracks, ...data]
+                        // Ensure data is an array
+                        if (Array.isArray(data)) {
+                            allTracks = [...allTracks, ...data]
+                        }
                     } else if (res.status === 401) {
                         router.push(`/login?next=/rank/${params.type}/${params.id}&error=spotify_expired`)
                         return
+                    } else {
+                        // Log error but continue with other albums
+                        console.error(`Failed to fetch tracks for ${params.type} ${id}:`, res.status)
+                        hasError = true
                     }
                 }
 
@@ -74,29 +82,45 @@ export default function RankingFlowPage({
                 const uniqueTracks = Array.from(new Map(allTracks.map(item => [item.id, item])).values())
 
                 // Always shuffle tracks using Fisher-Yates algorithm for better randomization
-                for (let i = uniqueTracks.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [uniqueTracks[i], uniqueTracks[j]] = [uniqueTracks[j], uniqueTracks[i]];
+                if (uniqueTracks.length > 1) {
+                    for (let i = uniqueTracks.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [uniqueTracks[i], uniqueTracks[j]] = [uniqueTracks[j], uniqueTracks[i]];
+                    }
                 }
 
                 setTracks(uniqueTracks)
 
                 if (uniqueTracks.length > 0) {
-                    setState({
-                        rankedList: [uniqueTracks[0]],
-                        unrankedList: uniqueTracks.slice(2),
-                        currentItem: uniqueTracks[1] || null,
-                        comparisonIndex: 0,
-                        low: 0,
-                        high: 0,
-                    })
-
                     if (uniqueTracks.length === 1) {
+                        // Special case: only one track - mark as complete immediately
+                        setState({
+                            rankedList: [uniqueTracks[0]],
+                            unrankedList: [],
+                            currentItem: null,
+                            comparisonIndex: 0,
+                            low: 0,
+                            high: 0,
+                        })
                         setIsComplete(true)
+                    } else {
+                        // Normal case: 2+ tracks
+                        setState({
+                            rankedList: [uniqueTracks[0]],
+                            unrankedList: uniqueTracks.slice(2),
+                            currentItem: uniqueTracks[1] || null,
+                            comparisonIndex: 0,
+                            low: 0,
+                            high: 0,
+                        })
                     }
+                } else {
+                    // No tracks found - set empty state so error message shows
+                    setState(null)
                 }
             } catch (error) {
                 console.error('Error fetching tracks:', error)
+                setState(null)
             } finally {
                 setLoading(false)
             }
@@ -426,14 +450,28 @@ export default function RankingFlowPage({
         )
     }
 
-    if (!state || !state.currentItem) {
+    if (!state || (!state.currentItem && !isComplete)) {
         return (
-            <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center">
-                <div className="nb-card p-8 text-center">
-                    <p className="font-bold">Not enough tracks to rank.</p>
+            <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center p-4">
+                <div className="nb-card p-8 text-center max-w-md">
+                    <p className="font-bold mb-6">Not enough tracks to rank.</p>
+                    <p className="text-sm font-bold text-gray-600 mb-6">
+                        The selected albums don't have enough tracks to create a ranking. Please try selecting different albums.
+                    </p>
+                    <button
+                        onClick={() => router.push('/rank')}
+                        className="nb-button px-6 py-3"
+                    >
+                        Go Back
+                    </button>
                 </div>
             </div>
         )
+    }
+
+    // Type guard: ensure currentItem exists (should always be true at this point)
+    if (!state.currentItem) {
+        return null
     }
 
     const comparisonTrack = state.rankedList[state.comparisonIndex]

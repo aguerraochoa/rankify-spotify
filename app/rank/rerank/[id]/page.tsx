@@ -304,14 +304,28 @@ export default function ReRankPage({
         )
     }
 
-    if (!state || !state.currentItem) {
+    if (!state || (!state.currentItem && !isComplete)) {
         return (
-            <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center">
-                <div className="nb-card p-8 text-center">
-                    <p className="font-bold">Not enough tracks to rank.</p>
+            <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center p-4">
+                <div className="nb-card p-8 text-center max-w-md">
+                    <p className="font-bold mb-6">Not enough tracks to rank.</p>
+                    <p className="text-sm font-bold text-gray-600 mb-6">
+                        This ranking doesn't have enough tracks to re-rank. Please try a different ranking.
+                    </p>
+                    <button
+                        onClick={() => router.push('/rankings')}
+                        className="nb-button px-6 py-3"
+                    >
+                        Go Back to Rankings
+                    </button>
                 </div>
             </div>
         )
+    }
+
+    // Type guard: ensure currentItem exists (should always be true at this point)
+    if (!state.currentItem) {
+        return null
     }
 
     const comparisonTrack = state.rankedList[state.comparisonIndex]
