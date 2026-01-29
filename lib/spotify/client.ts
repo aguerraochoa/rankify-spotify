@@ -113,11 +113,12 @@ export class SpotifyClient {
 
         if (trackIds.items.length === 0) return [];
 
-        // Fetch full track details in batches of 50
+        // Fetch full track details in batches of 50 (Spotify may return null for unavailable tracks)
         const ids = trackIds.items.map(t => t.id).join(',');
-        const fullTracks = await this.fetchSpotify<{ tracks: SpotifyTrack[] }>(`/tracks?ids=${ids}`);
+        const fullTracks = await this.fetchSpotify<{ tracks: (SpotifyTrack | null)[] }>(`/tracks?ids=${ids}`);
 
-        return fullTracks.tracks.map((track, index) => ({
+        const validTracks = fullTracks.tracks.filter((t): t is SpotifyTrack => t != null);
+        return validTracks.map((track, index) => ({
             id: `${track.id}-${index}`,
             title: track.name,
             artist: track.artists.map(a => a.name).join(', '),

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams, useParams } from 'next/navigation'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { SearchResult } from '@/lib/spotify/types'
@@ -25,11 +25,7 @@ function getSpotifyUrl(uri: string | null | undefined) {
     return null
 }
 
-export default function RankingFlowPage({
-    params
-}: {
-    params: { type: string; id: string }
-}) {
+export default function RankingFlowPage() {
     const [tracks, setTracks] = useState<SearchResult[]>([])
     const [loading, setLoading] = useState(true)
     const [state, setState] = useState<RankingState | null>(null)
@@ -41,42 +37,54 @@ export default function RankingFlowPage({
     const audioRef = useRef<HTMLAudioElement | null>(null)
     const router = useRouter()
     const searchParams = useSearchParams()
+    const params = useParams<{ type: string; id: string }>()
     const supabase = createClient()
 
     const name = searchParams.get('name') || 'Untitled'
 
     // Fetch tracks
     useEffect(() => {
-        if (!params) return
+        const type = params?.type
+        const idParam = params?.id
+        if (!type || !idParam) return
+
+        let cancelled = false
 
         const fetchTracks = async () => {
             setLoading(true)
             try {
-                const ids = params.id.split(',')
+                // Support multiple albums/playlists: id can be "id1,id2,id3" (decode in case commas are %2C)
+                const decodedId = decodeURIComponent(idParam)
+                const ids = decodedId.split(',').map(s => s.trim()).filter(Boolean)
                 let allTracks: SearchResult[] = []
-                let hasError = false
 
                 for (const id of ids) {
-                    const endpoint = params.type === 'playlist'
+                    if (cancelled) return
+                    const endpoint = type === 'playlist'
                         ? `/api/spotify/playlists/${id}/tracks`
                         : `/api/spotify/albums/${id}/tracks`
 
                     const res = await fetch(endpoint)
+                    if (cancelled) return
                     if (res.ok) {
                         const data = await res.json()
-                        // Ensure data is an array
-                        if (Array.isArray(data)) {
-                            allTracks = [...allTracks, ...data]
+                        // API returns array directly; handle edge cases
+                        const items = Array.isArray(data)
+                            ? data
+                            : (Array.isArray((data as any)?.tracks) ? (data as any).tracks : (data as any)?.items ?? [])
+                        if (Array.isArray(items) && items.length > 0) {
+                            allTracks = [...allTracks, ...items]
                         }
                     } else if (res.status === 401) {
-                        router.push(`/login?next=/rank/${params.type}/${params.id}&error=spotify_expired`)
+                        router.push(`/login?next=/rank/${type}/${idParam}&error=spotify_expired`)
                         return
                     } else {
-                        // Log error but continue with other albums
-                        console.error(`Failed to fetch tracks for ${params.type} ${id}:`, res.status)
-                        hasError = true
+                        // Log error but continue with other albums/playlists
+                        console.error(`Failed to fetch tracks for ${type} ${id}:`, res.status)
                     }
                 }
+
+                if (cancelled) return
 
                 // Remove duplicates if any
                 const uniqueTracks = Array.from(new Map(allTracks.map(item => [item.id, item])).values())
@@ -89,6 +97,8 @@ export default function RankingFlowPage({
                     }
                 }
 
+                // Only update state if this effect run is still active (avoids flash when Strict Mode double-runs)
+                if (cancelled) return
                 setTracks(uniqueTracks)
 
                 if (uniqueTracks.length > 0) {
@@ -104,11 +114,11 @@ export default function RankingFlowPage({
                         })
                         setIsComplete(true)
                     } else {
-                        // Normal case: 2+ tracks
+                        // Normal case: Initialize with empty ranked list to force manual selection
                         setState({
-                            rankedList: [uniqueTracks[0]],
-                            unrankedList: uniqueTracks.slice(2),
-                            currentItem: uniqueTracks[1] || null,
+                            rankedList: [],
+                            unrankedList: uniqueTracks,
+                            currentItem: null,
                             comparisonIndex: 0,
                             low: 0,
                             high: 0,
@@ -119,15 +129,20 @@ export default function RankingFlowPage({
                     setState(null)
                 }
             } catch (error) {
-                console.error('Error fetching tracks:', error)
-                setState(null)
+                if (!cancelled) {
+                    console.error('Error fetching tracks:', error)
+                    setState(null)
+                }
             } finally {
-                setLoading(false)
+                if (!cancelled) setLoading(false)
             }
         }
 
         fetchTracks()
-    }, [params, router])
+        return () => {
+            cancelled = true
+        }
+    }, [params?.type, params?.id, router])
 
     // Binary insertion logic
     const handleChoice = useCallback((preferCurrent: boolean) => {
@@ -238,6 +253,43 @@ export default function RankingFlowPage({
         setTracks(prev => prev.filter(t => t.id !== skippedTrackId))
     }, [state])
 
+
+
+    const handleStartSelection = (selectedTrack: SearchResult) => {
+        setState(prev => {
+            if (!prev) return null
+            const { unrankedList } = prev
+
+            // Remove selected track from unranked list
+            const newUnranked = unrankedList.filter(t => t.id !== selectedTrack.id)
+
+            if (newUnranked.length === 0) {
+                // Should not happen if we have > 1 track, but handle edge case
+                setIsComplete(true)
+                return {
+                    rankedList: [selectedTrack],
+                    unrankedList: [],
+                    currentItem: null,
+                    comparisonIndex: 0,
+                    low: 0,
+                    high: 0,
+                }
+            }
+
+            // Prepare first battle: selected track (Anchor) vs first from remaining
+            const nextItem = newUnranked[0]
+            const remainingUnranked = newUnranked.slice(1)
+
+            return {
+                rankedList: [selectedTrack],
+                unrankedList: remainingUnranked,
+                currentItem: nextItem,
+                comparisonIndex: 0,
+                low: 0,
+                high: 0,
+            }
+        })
+    }
 
     const playPreview = (trackId: string, previewUrl: string | null | undefined) => {
         if (!previewUrl) return
@@ -360,8 +412,8 @@ export default function RankingFlowPage({
         }
     }
 
-    // Loading state
-    if (loading || !params) {
+    // Loading state (params from useParams may be empty before hydration)
+    if (loading || !params?.type || !params?.id) {
         return <LoadingScreen message="Loading Tracks..." />
     }
 
@@ -444,6 +496,59 @@ export default function RankingFlowPage({
                                 <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
                             </svg>
                         </button>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // Selection View: When rankedList is empty, show grid to pick the anchor
+    if (state && state.rankedList.length === 0 && state.unrankedList.length > 0) {
+        return (
+            <div className="min-h-screen bg-[#fffdf5] p-4 md:p-6 pb-32">
+                <div className="max-w-6xl mx-auto pt-4 md:pt-8">
+                    <div className="text-center mb-8 md:mb-12">
+                        <div className="inline-block bg-[#ffd700] border-2 border-black px-4 py-2 font-black text-sm uppercase transform -rotate-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-4">
+                            PHASE_1_INIT
+                        </div>
+                        <h1 className="text-3xl md:text-5xl font-black uppercase mb-4">Pick a Starter</h1>
+                        <p className="font-bold text-gray-700 text-lg">Select one song you know well to begin the ranking.</p>
+                    </div>
+
+                    <div className="flex flex-col gap-3 max-w-3xl mx-auto">
+                        {state.unrankedList.map((track) => (
+                            <button
+                                key={track.id}
+                                onClick={() => handleStartSelection(track)}
+                                className="flex items-center gap-4 text-left p-3 nb-card hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 group"
+                            >
+                                <div className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 border-2 border-black overflow-hidden bg-gray-200 relative">
+                                    {track.coverArtUrl ? (
+                                        <Image
+                                            src={track.coverArtUrl}
+                                            alt={track.title}
+                                            width={100}
+                                            height={100}
+                                            className="w-full h-full object-cover"
+                                            unoptimized
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-2xl">🎵</div>
+                                    )}
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                    <h3 className="font-black text-base md:text-lg truncate group-hover:text-[#ff90e8] transition-colors">{track.title}</h3>
+                                    <p className="text-sm font-bold text-gray-600 truncate">{track.artist}</p>
+                                </div>
+
+                                <div className="hidden md:flex items-center justify-center px-4">
+                                    <span className="nb-button-outline text-xs py-2 px-4 group-hover:bg-black group-hover:text-white transition-colors">
+                                        Select
+                                    </span>
+                                </div>
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
