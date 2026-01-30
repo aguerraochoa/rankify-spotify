@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -16,7 +16,36 @@ export async function GET(request: NextRequest) {
   const finalNext = next || '/'
 
   if (code) {
-    const supabase = await createClient()
+    // Build the redirect response first. Session cookies MUST be set on this
+    // response — if we use createClient() from server and return a separate
+    // NextResponse.redirect(), cookies set via cookies().set() are NOT sent.
+    const redirectUrl = new URL(finalNext, requestUrl.origin)
+    redirectUrl.searchParams.set('auth', 'success')
+    const redirectResponse = NextResponse.redirect(redirectUrl)
+
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll()
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              const sameSite = options?.sameSite === false
+                ? undefined
+                : (options?.sameSite as 'strict' | 'lax' | 'none' | undefined)
+              redirectResponse.cookies.set(name, value, {
+                ...options,
+                sameSite,
+              })
+            })
+          },
+        },
+      }
+    )
+
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (error) {
@@ -27,15 +56,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(loginUrl)
     }
 
-    // Redirect to intended destination; add auth=success so client can refresh session (fixes first-load 401 after OAuth)
-    const redirectUrl = new URL(finalNext, requestUrl.origin)
-    redirectUrl.searchParams.set('auth', 'success')
-    const finalResponse = NextResponse.redirect(redirectUrl)
-
     // Clear the next-url cookie
-    finalResponse.cookies.set('sb-next-url', '', { path: '/', maxAge: 0 })
+    redirectResponse.cookies.set('sb-next-url', '', { path: '/', maxAge: 0 })
 
-    return finalResponse
+    return redirectResponse
   }
 
   // No code provided, redirect to login
