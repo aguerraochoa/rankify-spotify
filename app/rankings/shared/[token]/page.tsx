@@ -34,7 +34,7 @@ interface User {
 export default function SharedRankingPage() {
   const params = useParams()
   const router = useRouter()
-  const shareToken = params.token as string
+  const shareToken = params?.token as string | undefined
   const [ranking, setRanking] = useState<RankedList | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -51,6 +51,11 @@ export default function SharedRankingPage() {
   }, [supabase.auth])
 
   useEffect(() => {
+    if (!shareToken) {
+      setLoading(false)
+      setError('Invalid share link')
+      return
+    }
     const fetchRanking = async () => {
       try {
         const response = await fetch(`/api/ranked-lists/shared/${shareToken}`)
@@ -72,9 +77,7 @@ export default function SharedRankingPage() {
       }
     }
 
-    if (shareToken) {
-      fetchRanking()
-    }
+    fetchRanking()
   }, [shareToken])
 
   if (loading) {

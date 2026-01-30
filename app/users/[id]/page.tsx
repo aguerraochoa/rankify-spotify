@@ -35,7 +35,7 @@ interface RankedList {
 export default function UserProfilePage() {
   const router = useRouter()
   const params = useParams()
-  const userId = params.id as string
+  const userId = params?.id as string | undefined
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [rankings, setRankings] = useState<RankedList[]>([])
   const [isFollowing, setIsFollowing] = useState(false)
@@ -46,6 +46,11 @@ export default function UserProfilePage() {
   const supabase = createClient()
 
   useEffect(() => {
+    if (!userId) {
+      setLoading(false)
+      setError('Invalid user')
+      return
+    }
     const fetchData = async () => {
       try {
         const {
@@ -79,9 +84,7 @@ export default function UserProfilePage() {
       }
     }
 
-    if (userId) {
-      fetchData()
-    }
+    fetchData()
   }, [userId, router, supabase.auth])
 
   const handleFollowToggle = async () => {
@@ -129,7 +132,7 @@ export default function UserProfilePage() {
     return <LoadingScreen message="Loading Profile..." />
   }
 
-  if (error || !profile) {
+  if (error || !profile || !userId) {
     return (
       <div className="min-h-screen bg-[#fffdf5] p-4 flex items-center justify-center">
         <div className="nb-card p-8 text-center">

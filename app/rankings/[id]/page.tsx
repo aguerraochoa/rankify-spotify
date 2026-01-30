@@ -34,7 +34,7 @@ interface RankedList {
 export default function RankingDetailPage() {
   const router = useRouter()
   const params = useParams()
-  const rankingId = params.id as string
+  const rankingId = params?.id as string | undefined
   const [ranking, setRanking] = useState<RankedList | null>(null)
   const [editableSongs, setEditableSongs] = useState<RankedSong[]>([])
   const [editableName, setEditableName] = useState<string | null>(null)
@@ -52,6 +52,11 @@ export default function RankingDetailPage() {
   const supabase = createClient()
 
   useEffect(() => {
+    if (!rankingId) {
+      setLoading(false)
+      setError('Invalid ranking')
+      return
+    }
     const fetchRanking = async () => {
       try {
         const {
@@ -84,9 +89,7 @@ export default function RankingDetailPage() {
       }
     }
 
-    if (rankingId) {
-      fetchRanking()
-    }
+    fetchRanking()
   }, [rankingId, router, supabase.auth])
 
   const handleEdit = () => {

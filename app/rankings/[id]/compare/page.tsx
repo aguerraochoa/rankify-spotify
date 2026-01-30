@@ -22,7 +22,7 @@ interface RankedList {
 export default function CompareSelectionPage() {
   const router = useRouter()
   const params = useParams()
-  const theirRankingId = params.id as string
+  const theirRankingId = params?.id as string | undefined
   const [rankings, setRankings] = useState<RankedList[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -64,6 +64,19 @@ export default function CompareSelectionPage() {
 
   if (loading) {
     return <LoadingScreen message="Loading Your Rankings..." />
+  }
+
+  if (!theirRankingId) {
+    return (
+      <div className="min-h-screen bg-[#fffdf5] p-4 flex items-center justify-center">
+        <div className="nb-card p-8 text-center">
+          <p className="font-bold text-red-600 mb-6">Invalid ranking.</p>
+          <Link href="/rankings" className="nb-button px-6 py-3 inline-block">
+            Back to Rankings
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   if (error) {

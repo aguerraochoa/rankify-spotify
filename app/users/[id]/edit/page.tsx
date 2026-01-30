@@ -20,7 +20,7 @@ interface UserProfile {
 export default function EditProfilePage() {
   const router = useRouter()
   const params = useParams()
-  const userId = params.id as string
+  const userId = params?.id as string | undefined
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -33,6 +33,11 @@ export default function EditProfilePage() {
   const [bio, setBio] = useState('')
 
   useEffect(() => {
+    if (!userId) {
+      setLoading(false)
+      setError('Invalid user')
+      return
+    }
     const fetchProfile = async () => {
       try {
         const {
@@ -61,9 +66,7 @@ export default function EditProfilePage() {
       }
     }
 
-    if (userId) {
-      fetchProfile()
-    }
+    fetchProfile()
   }, [userId, router, supabase.auth])
 
 
@@ -117,7 +120,7 @@ export default function EditProfilePage() {
     return <LoadingScreen message="Loading..." />
   }
 
-  if (error && !profile) {
+  if ((error || !userId) && !profile) {
     return (
       <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center p-8">
         <div className="nb-card p-6 text-center">

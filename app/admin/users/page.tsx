@@ -46,7 +46,7 @@ function AdminUsersPageContent() {
           return
         }
 
-        const userId = searchParams.get('userId')
+        const userId = searchParams?.get('userId')
         if (userId) {
           const response = await fetch(`/api/admin/users/${userId}`)
           if (response.ok) {

@@ -35,8 +35,8 @@ interface User {
 export default function ComparePage() {
   const router = useRouter()
   const params = useParams()
-  const theirId = params.theirId as string
-  const yourId = params.yourId as string
+  const theirId = params?.theirId as string | undefined
+  const yourId = params?.yourId as string | undefined
   const [yourRanking, setYourRanking] = useState<RankedList | null>(null)
   const [theirRanking, setTheirRanking] = useState<RankedList | null>(null)
   const [yourUser, setYourUser] = useState<User | null>(null)
@@ -49,6 +49,11 @@ export default function ComparePage() {
   const supabase = createClient()
 
   useEffect(() => {
+    if (!yourId || !theirId) {
+      setLoading(false)
+      setError('Invalid comparison')
+      return
+    }
     const fetchData = async () => {
       try {
         const {
@@ -100,9 +105,7 @@ export default function ComparePage() {
       }
     }
 
-    if (yourId && theirId) {
-      fetchData()
-    }
+    fetchData()
   }, [yourId, theirId, router, supabase.auth])
 
   if (loading) {

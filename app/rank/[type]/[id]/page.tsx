@@ -40,7 +40,7 @@ export default function RankingFlowPage() {
     const params = useParams<{ type: string; id: string }>()
     const supabase = createClient()
 
-    const name = searchParams.get('name') || 'Untitled'
+    const name = searchParams?.get('name') || 'Untitled'
 
     // Fetch tracks
     useEffect(() => {
@@ -154,7 +154,7 @@ export default function RankingFlowPage() {
         return () => {
             cancelled = true
         }
-    }, [params?.type, params?.id, router])
+    }, [params?.type, params?.id, router, supabase.auth])
 
     // Binary insertion logic
     const handleChoice = useCallback((preferCurrent: boolean) => {
@@ -341,8 +341,8 @@ export default function RankingFlowPage() {
             const { error } = await supabase.from('ranked_lists').insert({
                 user_id: user.id,
                 name: name,
-                source_type: params.type,
-                source_id: params.id,
+                source_type: params?.type ?? '',
+                source_id: params?.id ?? '',
                 songs: state.rankedList,
                 song_count: tracks.length,
                 cover_art_url: state.rankedList[0]?.coverArtUrl || '',
@@ -375,8 +375,8 @@ export default function RankingFlowPage() {
             const { error } = await supabase.from('ranked_lists').insert({
                 user_id: user.id,
                 name: name,
-                source_type: params.type,
-                source_id: params.id,
+                source_type: params?.type ?? '',
+                source_id: params?.id ?? '',
                 songs: state.rankedList,
                 song_count: state.rankedList.length,
                 cover_art_url: state.rankedList[0]?.coverArtUrl || '',
@@ -514,60 +514,8 @@ export default function RankingFlowPage() {
         )
     }
 
-    // Selection View: When rankedList is empty, show grid to pick the anchor
-    if (state && state.rankedList.length === 0 && state.unrankedList.length > 0) {
-        return (
-            <div className="min-h-screen bg-[#fffdf5] p-4 md:p-6 pb-32">
-                <div className="max-w-6xl mx-auto pt-4 md:pt-8">
-                    <div className="text-center mb-8 md:mb-12">
-                        <div className="inline-block bg-[#ffd700] border-2 border-black px-4 py-2 font-black text-sm uppercase transform -rotate-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-4">
-                            PHASE_1_INIT
-                        </div>
-                        <h1 className="text-3xl md:text-5xl font-black uppercase mb-4">Pick a Starter</h1>
-                        <p className="font-bold text-gray-700 text-lg">Select one song you know well to begin the ranking.</p>
-                    </div>
-
-                    <div className="flex flex-col gap-3 max-w-3xl mx-auto">
-                        {state.unrankedList.map((track) => (
-                            <button
-                                key={track.id}
-                                onClick={() => handleStartSelection(track)}
-                                className="flex items-center gap-4 text-left p-3 nb-card hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all duration-200 group"
-                            >
-                                <div className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 border-2 border-black overflow-hidden bg-gray-200 relative">
-                                    {track.coverArtUrl ? (
-                                        <Image
-                                            src={track.coverArtUrl}
-                                            alt={track.title}
-                                            width={100}
-                                            height={100}
-                                            className="w-full h-full object-cover"
-                                            unoptimized
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-2xl">🎵</div>
-                                    )}
-                                </div>
-
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="font-black text-base md:text-lg truncate group-hover:text-[#ff90e8] transition-colors">{track.title}</h3>
-                                    <p className="text-sm font-bold text-gray-600 truncate">{track.artist}</p>
-                                </div>
-
-                                <div className="hidden md:flex items-center justify-center px-4">
-                                    <span className="nb-button-outline text-xs py-2 px-4 group-hover:bg-black group-hover:text-white transition-colors">
-                                        Select
-                                    </span>
-                                </div>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
-    if (!state || (!state.currentItem && !isComplete)) {
+    // Not enough tracks: no state or empty lists
+    if (!state || (state.rankedList.length === 0 && state.unrankedList.length === 0)) {
         return (
             <div className="min-h-screen bg-[#fffdf5] flex items-center justify-center p-4">
                 <div className="nb-card p-8 text-center max-w-md">
@@ -586,13 +534,9 @@ export default function RankingFlowPage() {
         )
     }
 
-    // Type guard: ensure currentItem exists (should always be true at this point)
-    if (!state.currentItem) {
-        return null
-    }
-
-    const comparisonTrack = state.rankedList[state.comparisonIndex]
-    const progress = ((tracks.length - state.unrankedList.length - 1) / tracks.length) * 100
+    const isSelectionPhase = state.rankedList.length === 0 && state.unrankedList.length > 0
+    const comparisonTrack = state.rankedList.length > 0 ? state.rankedList[state.comparisonIndex] : null
+    const progress = isSelectionPhase ? 0 : ((tracks.length - state.unrankedList.length - 1) / tracks.length) * 100
     const songsRanked = state.rankedList.length
 
     return (
@@ -636,137 +580,169 @@ export default function RankingFlowPage() {
                         </div>
                         <div className="flex justify-between text-xs font-bold">
                             <span className="truncate max-w-[150px]">{name}</span>
-                            <span>{Math.round(progress)}% complete</span>
+                            <span>{isSelectionPhase ? 'Pick starter' : `${Math.round(progress)}% complete`}</span>
                         </div>
                     </div>
 
-                    {/* VS Header */}
+                    {/* VS-style Header (same for pick-starter and vs mode) */}
                     <div className="text-center mb-6">
                         <div className="inline-block bg-[#ffd700] border-2 border-black px-4 py-2 font-black text-sm uppercase transform -rotate-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-4">
-                            VS_MODE_ACTIVE
+                            {isSelectionPhase ? 'PICK_STARTER' : 'VS_MODE_ACTIVE'}
                         </div>
                         <h2 className="text-2xl md:text-4xl font-black uppercase">
-                            Choose Your Song
+                            {isSelectionPhase ? 'Pick a song to start' : 'Choose Your Song'}
                         </h2>
                     </div>
 
-                    {/* Comparison cards */}
-                    <div className="max-w-3xl mx-auto grid grid-cols-2 gap-3 md:gap-6 mb-4 relative">
-                        {/* VS Badge */}
-                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 bg-black text-white font-black text-lg md:text-2xl px-2 md:px-4 py-1 md:py-2 rotate-12 border-2 border-white">
-                            VS
+                    {isSelectionPhase ? (
+                        /* Same card grid as vs, but list of songs to pick one as starter */
+                        <div className="max-w-3xl mx-auto grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
+                            {state.unrankedList.map((track) => (
+                                <button
+                                    key={track.id}
+                                    onClick={() => handleStartSelection(track)}
+                                    className="nb-card p-3 md:p-4 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] cursor-pointer group text-left"
+                                >
+                                    <div className="relative aspect-square border-4 border-black mb-3 bg-[#00d4ff] overflow-hidden">
+                                        {track.coverArtUrl ? (
+                                            <Image
+                                                src={track.coverArtUrl}
+                                                alt={track.title}
+                                                fill
+                                                className="object-cover"
+                                                unoptimized
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <span className="text-4xl font-black text-white">🎵</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <h3 className="font-black text-sm md:text-base uppercase mb-1 truncate leading-tight w-full">{track.title}</h3>
+                                    <p className="font-bold text-[10px] md:text-xs bg-[#00d4ff] inline-block px-1.5 py-0.5 border border-black truncate max-w-full mb-2">{track.artist}</p>
+                                    <span className="w-full inline-block py-2 nb-button text-center text-xs md:text-sm">
+                                        Pick This
+                                    </span>
+                                </button>
+                            ))}
                         </div>
+                    ) : comparisonTrack && state.currentItem ? (
+                        <>
+                            {/* Comparison cards (vs mode) */}
+                            <div className="max-w-3xl mx-auto grid grid-cols-2 gap-3 md:gap-6 mb-4 relative">
+                                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 bg-black text-white font-black text-lg md:text-2xl px-2 md:px-4 py-1 md:py-2 rotate-12 border-2 border-white">
+                                    VS
+                                </div>
 
-                        {/* Current item (left/top) */}
-                        <div className="nb-card p-3 md:p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] cursor-pointer group">
-                            <div className="relative aspect-square border-4 border-black mb-4 bg-[#00d4ff] overflow-hidden">
-                                {state.currentItem.coverArtUrl ? (
-                                    <Image
-                                        src={state.currentItem.coverArtUrl}
-                                        alt={state.currentItem.title}
-                                        fill
-                                        className="object-cover"
-                                        unoptimized
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <span className="text-6xl font-black text-white">A</span>
+                                {/* Current item (left) */}
+                                <div className="nb-card p-3 md:p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] cursor-pointer group">
+                                    <div className="relative aspect-square border-4 border-black mb-4 bg-[#00d4ff] overflow-hidden">
+                                        {state.currentItem.coverArtUrl ? (
+                                            <Image
+                                                src={state.currentItem.coverArtUrl}
+                                                alt={state.currentItem.title}
+                                                fill
+                                                className="object-cover"
+                                                unoptimized
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <span className="text-6xl font-black text-white">A</span>
+                                            </div>
+                                        )}
+                                        {getSpotifyUrl(state.currentItem.spotifyUri) && (
+                                            <div className="absolute inset-x-0 bottom-4 flex justify-center pointer-events-none group-hover:bg-black/10 transition-colors">
+                                                <a
+                                                    href={getSpotifyUrl(state.currentItem.spotifyUri)!}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="pointer-events-auto flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black font-black uppercase text-[10px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#1DB954] hover:text-white"
+                                                >
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+                                                    </svg>
+                                                    <span>Spotify</span>
+                                                </a>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                                {/* Spotify link */}
-                                {getSpotifyUrl(state.currentItem.spotifyUri) && (
-                                    <div className="absolute inset-x-0 bottom-4 flex justify-center pointer-events-none group-hover:bg-black/10 transition-colors">
-                                        <a
-                                            href={getSpotifyUrl(state.currentItem.spotifyUri)!}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            onClick={(e) => e.stopPropagation()}
-                                            className="pointer-events-auto flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black font-black uppercase text-[10px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#1DB954] hover:text-white"
-                                        >
-                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
-                                            </svg>
-                                            <span>Spotify</span>
-                                        </a>
+                                    <h3 className="font-black text-base md:text-xl uppercase mb-1 truncate leading-tight w-full">{state.currentItem.title}</h3>
+                                    <div className="min-w-0 max-w-full">
+                                        <p className="font-bold text-[10px] md:text-sm bg-[#00d4ff] inline-block px-1.5 md:px-2 border border-black mb-3 md:mb-4 truncate max-w-full">{state.currentItem.artist}</p>
                                     </div>
-                                )}
-                            </div>
-                            <h3 className="font-black text-base md:text-xl uppercase mb-1 truncate leading-tight w-full">{state.currentItem.title}</h3>
-                            <div className="min-w-0 max-w-full">
-                                <p className="font-bold text-[10px] md:text-sm bg-[#00d4ff] inline-block px-1.5 md:px-2 border border-black mb-3 md:mb-4 truncate max-w-full">{state.currentItem.artist}</p>
-                            </div>
-                            <button
-                                onClick={() => handleChoice(true)}
-                                className="w-full py-2 md:py-4 nb-button text-xs md:text-base"
-                            >
-                                Vote This
-                            </button>
-                        </div>
+                                    <button
+                                        onClick={() => handleChoice(true)}
+                                        className="w-full py-2 md:py-4 nb-button text-xs md:text-base"
+                                    >
+                                        Vote This
+                                    </button>
+                                </div>
 
-                        {/* Comparison item (right/bottom) */}
-                        <div className="nb-card p-3 md:p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] cursor-pointer group">
-                            <div className="relative aspect-square border-4 border-black mb-4 bg-[#ff6b6b] overflow-hidden">
-                                {comparisonTrack.coverArtUrl ? (
-                                    <Image
-                                        src={comparisonTrack.coverArtUrl}
-                                        alt={comparisonTrack.title}
-                                        fill
-                                        className="object-cover"
-                                        unoptimized
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <span className="text-6xl font-black text-white">B</span>
+                                {/* Comparison item (right) */}
+                                <div className="nb-card p-3 md:p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] cursor-pointer group">
+                                    <div className="relative aspect-square border-4 border-black mb-4 bg-[#ff6b6b] overflow-hidden">
+                                        {comparisonTrack.coverArtUrl ? (
+                                            <Image
+                                                src={comparisonTrack.coverArtUrl}
+                                                alt={comparisonTrack.title}
+                                                fill
+                                                className="object-cover"
+                                                unoptimized
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <span className="text-6xl font-black text-white">B</span>
+                                            </div>
+                                        )}
+                                        {getSpotifyUrl(comparisonTrack.spotifyUri) && (
+                                            <div className="absolute inset-x-0 bottom-4 flex justify-center pointer-events-none group-hover:bg-black/10 transition-colors">
+                                                <a
+                                                    href={getSpotifyUrl(comparisonTrack.spotifyUri)!}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="pointer-events-auto flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black font-black uppercase text-[10px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#1DB954] hover:text-white"
+                                                >
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+                                                    </svg>
+                                                    <span>Spotify</span>
+                                                </a>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
-                                {/* Spotify link */}
-                                {getSpotifyUrl(comparisonTrack.spotifyUri) && (
-                                    <div className="absolute inset-x-0 bottom-4 flex justify-center pointer-events-none group-hover:bg-black/10 transition-colors">
-                                        <a
-                                            href={getSpotifyUrl(comparisonTrack.spotifyUri)!}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            onClick={(e) => e.stopPropagation()}
-                                            className="pointer-events-auto flex items-center gap-2 px-3 py-1.5 bg-white border-2 border-black font-black uppercase text-[10px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all hover:bg-[#1DB954] hover:text-white"
-                                        >
-                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
-                                            </svg>
-                                            <span>Spotify</span>
-                                        </a>
+                                    <h3 className="font-black text-base md:text-xl uppercase mb-1 truncate leading-tight w-full">{comparisonTrack.title}</h3>
+                                    <div className="min-w-0 max-w-full">
+                                        <p className="font-bold text-[10px] md:text-sm bg-[#ff6b6b] inline-block px-1.5 md:px-2 border border-black mb-3 md:mb-4 truncate max-w-full">{comparisonTrack.artist}</p>
                                     </div>
-                                )}
+                                    <button
+                                        onClick={() => handleChoice(false)}
+                                        className="w-full py-2 md:py-4 nb-button text-xs md:text-base"
+                                    >
+                                        Vote This
+                                    </button>
+                                </div>
                             </div>
-                            <h3 className="font-black text-base md:text-xl uppercase mb-1 truncate leading-tight w-full">{comparisonTrack.title}</h3>
-                            <div className="min-w-0 max-w-full">
-                                <p className="font-bold text-[10px] md:text-sm bg-[#ff6b6b] inline-block px-1.5 md:px-2 border border-black mb-3 md:mb-4 truncate max-w-full">{comparisonTrack.artist}</p>
+
+                            {/* I Don't Know Button (vs mode only) */}
+                            <div className="max-w-3xl mx-auto mb-6">
+                                <button
+                                    onClick={handleSkip}
+                                    className="w-full py-3 bg-[#e0e0e0] border-2 border-black font-bold uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-2 transition-all"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                    </svg>
+                                    I don&apos;t know this song (Skip)
+                                </button>
                             </div>
-                            <button
-                                onClick={() => handleChoice(false)}
-                                className="w-full py-2 md:py-4 nb-button text-xs md:text-base"
-                            >
-                                Vote This
-                            </button>
-                        </div>
-                    </div>
 
-                    {/* I Don't Know Button */}
-                    <div className="max-w-3xl mx-auto mb-6">
-                        <button
-                            onClick={handleSkip}
-                            className="w-full py-3 bg-[#e0e0e0] border-2 border-black font-bold uppercase shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center gap-2 transition-all"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                            </svg>
-                            I don&apos;t know this song (Skip)
-                        </button>
-                    </div>
-
-                    {/* Remaining count */}
-                    <p className="text-center font-bold text-sm">
-                        {state.unrankedList.length + 1} songs remaining to rank
-                    </p>
+                            <p className="text-center font-bold text-sm mb-6">
+                                {state.unrankedList.length + 1} songs remaining to rank
+                            </p>
+                        </>
+                    ) : null}
 
                     {/* Mobile toggle for live ranking */}
                     <div className="lg:hidden mt-6">

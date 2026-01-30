@@ -25,8 +25,8 @@ function ResetPasswordForm() {
       const type = hashParams.get('type')
 
       // Also check query params (some email clients might strip the hash)
-      const queryToken = searchParams.get('access_token')
-      const queryType = searchParams.get('type')
+      const queryToken = searchParams?.get('access_token')
+      const queryType = searchParams?.get('type')
 
       // If we have recovery tokens in the hash, exchange them for a session
       if ((accessToken && refreshToken && type === 'recovery') || (queryToken && queryType === 'recovery')) {

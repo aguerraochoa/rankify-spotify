@@ -23,7 +23,7 @@ export function NavHeader({
 
     const isActive = (path: string) => pathname === path
     // Discover is active on /discover and when viewing a user profile (part of discover flow)
-    const isDiscoverActive = pathname === '/discover' || pathname.startsWith('/users/')
+    const isDiscoverActive = pathname === '/discover' || (pathname?.startsWith('/users/') ?? false)
 
     return (
         <nav className="border-b-4 border-black bg-[#fffdf5] sticky top-0 z-50">

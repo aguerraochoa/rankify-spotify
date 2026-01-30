@@ -52,7 +52,7 @@ function AdminRankingsPageContent() {
           return
         }
 
-        const rankingId = searchParams.get('rankingId')
+        const rankingId = searchParams?.get('rankingId')
         if (rankingId) {
           const response = await fetch(`/api/admin/rankings/${rankingId}`)
           if (response.ok) {
