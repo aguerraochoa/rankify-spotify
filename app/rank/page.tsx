@@ -73,24 +73,18 @@ export default function RankPage() {
 
                 router.refresh()
 
-                // After OAuth, give session cookies time to propagate before Spotify API check
-                if (isFreshAuth) {
-                    await new Promise(resolve => setTimeout(resolve, 800))
-                } else {
+                // After fresh OAuth we skip the upfront Spotify check — session/cookies may not
+                // be visible to the API route yet. We'll check when they pick "Rank a Playlist"
+                // or "Search albums" (fetchPlaylists / searchAlbums), matching the old working flow.
+                if (!isFreshAuth) {
                     await new Promise(resolve => setTimeout(resolve, 300))
-                }
-
-                // Verify Spotify token; retry once after fresh OAuth (cookies may still be propagating)
-                let res = await fetch('/api/spotify/playlists?limit=1')
-                if (res.status === 401 && isFreshAuth && mounted) {
-                    await new Promise(resolve => setTimeout(resolve, 1000))
-                    res = await fetch('/api/spotify/playlists?limit=1')
-                }
-                if (res.status === 401) {
-                    if (mounted) {
-                        router.push('/login?next=/rank&error=spotify_expired')
+                    const res = await fetch('/api/spotify/playlists?limit=1')
+                    if (res.status === 401) {
+                        if (mounted) {
+                            router.push('/login?next=/rank&error=spotify_expired')
+                        }
+                        return
                     }
-                    return
                 }
 
                 if (mounted) {
