@@ -53,6 +53,18 @@ export default function RankingFlowPage() {
         const fetchTracks = async () => {
             setLoading(true)
             try {
+                // After OAuth callback we may land with ?auth=success; sync session before Spotify API calls
+                if (typeof window !== 'undefined') {
+                    const urlParams = new URLSearchParams(window.location.search)
+                    if (urlParams.get('auth') === 'success') {
+                        urlParams.delete('auth')
+                        const newSearch = urlParams.toString()
+                        const newPath = window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash
+                        window.history.replaceState({}, '', newPath)
+                        await supabase.auth.refreshSession()
+                    }
+                }
+
                 // Support multiple albums/playlists: id can be "id1,id2,id3" (decode in case commas are %2C)
                 const decodedId = decodeURIComponent(idParam)
                 const ids = decodedId.split(',').map(s => s.trim()).filter(Boolean)

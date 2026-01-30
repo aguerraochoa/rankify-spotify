@@ -27,8 +27,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(loginUrl)
     }
 
-    // Redirect to intended destination
+    // Redirect to intended destination; add auth=success so client can refresh session (fixes first-load 401 after OAuth)
     const redirectUrl = new URL(finalNext, requestUrl.origin)
+    redirectUrl.searchParams.set('auth', 'success')
     const finalResponse = NextResponse.redirect(redirectUrl)
 
     // Clear the next-url cookie

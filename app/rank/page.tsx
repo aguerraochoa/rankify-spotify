@@ -38,6 +38,18 @@ export default function RankPage() {
             authCheckPerformed = true
             
             try {
+                // After OAuth callback we land here with ?auth=success; sync session before any API calls (fixes first-load 401)
+                if (typeof window !== 'undefined') {
+                    const urlParams = new URLSearchParams(window.location.search)
+                    if (urlParams.get('auth') === 'success') {
+                        urlParams.delete('auth')
+                        const newSearch = urlParams.toString()
+                        const newPath = window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash
+                        window.history.replaceState({}, '', newPath)
+                        await supabase.auth.refreshSession()
+                    }
+                }
+
                 // Check for session immediately
                 let { data: { session } } = await supabase.auth.getSession()
                 
