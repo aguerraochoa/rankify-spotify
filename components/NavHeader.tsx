@@ -22,6 +22,8 @@ export function NavHeader({
     const pathname = usePathname()
 
     const isActive = (path: string) => pathname === path
+    // Discover is active on /discover and when viewing a user profile (part of discover flow)
+    const isDiscoverActive = pathname === '/discover' || pathname.startsWith('/users/')
 
     return (
         <nav className="border-b-4 border-black bg-[#fffdf5] sticky top-0 z-50">
@@ -92,7 +94,7 @@ export function NavHeader({
                     </Link>
                     <Link
                         href="/discover"
-                        className={`px-3 py-2 text-sm font-black uppercase border-2 border-black transition-all ${isActive('/discover')
+                        className={`px-3 py-2 text-sm font-black uppercase border-2 border-black transition-all ${isDiscoverActive
                             ? 'bg-[#00d4ff] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                             : 'bg-white hover:bg-[#00d4ff] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                             }`}
