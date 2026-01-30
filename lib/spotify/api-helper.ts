@@ -1,14 +1,41 @@
 import { createClient } from '@/lib/supabase/server'
 import { SpotifyClient } from '@/lib/spotify/client'
 import { refreshSpotifyToken } from '@/lib/spotify/auth'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
+
+/** Cookie set by auth callback when Supabase session has provider tokens (Supabase strips them on refresh). */
+const SPOTIFY_TOKENS_COOKIE = 'sb-spotify-tokens'
+
+function parseTokensPayload(raw: string | undefined): { provider_token: string | null; provider_refresh_token: string | null } | null {
+    if (!raw) return null
+    try {
+        const parsed = JSON.parse(raw) as { provider_token?: string | null; provider_refresh_token?: string | null }
+        return {
+            provider_token: parsed.provider_token ?? null,
+            provider_refresh_token: parsed.provider_refresh_token ?? null,
+        }
+    } catch {
+        return null
+    }
+}
+
+function getProviderTokensFromRequest(request: NextRequest | null): { provider_token: string | null; provider_refresh_token: string | null } | null {
+    if (!request) return null
+    return parseTokensPayload(request.cookies.get(SPOTIFY_TOKENS_COOKIE)?.value)
+}
 
 /**
- * Helper to run a Spotify operation with automatic token refresh
+ * Helper to run a Spotify operation with automatic token refresh.
+ * Pass request so we can fall back to sb-spotify-tokens cookie when session lost provider tokens (e.g. after refresh).
  */
 export async function withSpotify<T>(
-    operation: (client: SpotifyClient) => Promise<T>
-) {
+    requestOrOperation: NextRequest | ((client: SpotifyClient) => Promise<T>),
+    operationOrUndefined?: (client: SpotifyClient) => Promise<T>
+): Promise<{ data?: T; error?: string; status?: number }> {
+    const request = operationOrUndefined ? (requestOrOperation as NextRequest) : null
+    const operation = operationOrUndefined ?? (requestOrOperation as (client: SpotifyClient) => Promise<T>)
+
     try {
         const supabase = await createClient()
         const { data: { session }, error: sessionError } = await supabase.auth.getSession()
@@ -17,13 +44,26 @@ export async function withSpotify<T>(
             return { error: 'Not authenticated', status: 401 }
         }
 
-        let accessToken = session.provider_token
-        const refreshToken = session.provider_refresh_token
+        let accessToken = session.provider_token ?? null
+        let refreshToken = session.provider_refresh_token ?? null
 
-        console.log('Spotify API Call Attempt:', {
-            hasAccessToken: !!accessToken,
-            hasRefreshToken: !!refreshToken
-        })
+        // Supabase strips provider_token/provider_refresh_token from session on JWT refresh. Use cookie set at OAuth.
+        if (!accessToken || !refreshToken) {
+            const fromRequest = getProviderTokensFromRequest(request)
+            if (fromRequest?.provider_token || fromRequest?.provider_refresh_token) {
+                accessToken = accessToken ?? fromRequest.provider_token
+                refreshToken = refreshToken ?? fromRequest.provider_refresh_token
+            }
+            // Fallback: read from next/headers cookie store (same request in Route Handlers; handles edge cases)
+            if ((!accessToken || !refreshToken)) {
+                const cookieStore = await cookies()
+                const fromStore = parseTokensPayload(cookieStore.get(SPOTIFY_TOKENS_COOKIE)?.value)
+                if (fromStore?.provider_token || fromStore?.provider_refresh_token) {
+                    accessToken = accessToken ?? fromStore.provider_token
+                    refreshToken = refreshToken ?? fromStore.provider_refresh_token
+                }
+            }
+        }
 
         // If access token is missing but we have a refresh token, try to refresh first
         if (!accessToken && refreshToken) {

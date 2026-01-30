@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
             )
         }
 
-        const result = await withSpotify(async (spotify) => {
+        const result = await withSpotify(req, async (spotify) => {
             const playlist = await spotify.createPlaylist(name, uris, description)
             return playlist
         })

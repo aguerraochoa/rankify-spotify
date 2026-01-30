@@ -1,11 +1,12 @@
 import { withSpotify, handleSpotifyResponse } from '@/lib/spotify/api-helper'
+import { NextRequest } from 'next/server'
 
 export async function GET(
-    request: Request,
+    request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) {
     const { id } = await params
-    const result = await withSpotify(async (spotify) => {
+    const result = await withSpotify(request, async (spotify) => {
         return await spotify.getAlbumTracks(id)
     })
 

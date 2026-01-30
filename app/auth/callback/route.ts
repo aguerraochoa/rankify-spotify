@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data: { session }, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (error) {
       console.error('Error exchanging code for session:', error)
@@ -57,6 +57,22 @@ export async function GET(request: NextRequest) {
       loginUrl.searchParams.set('error', 'auth_failed')
       loginUrl.searchParams.set('details', error.message)
       return NextResponse.redirect(loginUrl)
+    }
+
+    // Supabase strips provider_token/provider_refresh_token from the session on any JWT refresh.
+    // Persist them in a cookie so API routes can use them when the main session no longer has them.
+    if (session?.provider_token || session?.provider_refresh_token) {
+      const payload = JSON.stringify({
+        provider_token: session.provider_token ?? null,
+        provider_refresh_token: session.provider_refresh_token ?? null,
+      })
+      redirectResponse.cookies.set('sb-spotify-tokens', payload, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        httpOnly: true,
+        secure: requestUrl.protocol === 'https:',
+        sameSite: 'lax',
+      })
     }
 
     // Clear the next-url cookie

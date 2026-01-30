@@ -1,6 +1,7 @@
 import { withSpotify, handleSpotifyResponse } from '@/lib/spotify/api-helper'
+import { NextRequest } from 'next/server'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
         const { name, trackIds, description } = await request.json()
 
@@ -8,7 +9,7 @@ export async function POST(request: Request) {
             return Response.json({ error: 'Missing required fields' }, { status: 400 })
         }
 
-        const result = await withSpotify(async (spotify) => {
+        const result = await withSpotify(request, async (spotify) => {
             return await spotify.createPlaylist(name, trackIds, description)
         })
 

@@ -38,7 +38,9 @@ export default function RankPage() {
             authCheckPerformed = true
             
             try {
-                // After OAuth callback we land here with ?auth=success; sync session before any API calls
+                // After OAuth we have ?auth=success. Do NOT call refreshSession() — Supabase
+                // strips provider_token/provider_refresh_token from the session on refresh,
+                // which would break Spotify API calls when the user clicks "Rank a Playlist".
                 const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
                 const isFreshAuth = urlParams?.get('auth') === 'success'
                 if (typeof window !== 'undefined' && isFreshAuth) {
@@ -46,7 +48,6 @@ export default function RankPage() {
                     const newSearch = urlParams!.toString()
                     const newPath = window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash
                     window.history.replaceState({}, '', newPath)
-                    await supabase.auth.refreshSession()
                 }
 
                 // Check for session immediately
@@ -78,7 +79,7 @@ export default function RankPage() {
                 // or "Search albums" (fetchPlaylists / searchAlbums), matching the old working flow.
                 if (!isFreshAuth) {
                     await new Promise(resolve => setTimeout(resolve, 300))
-                    const res = await fetch('/api/spotify/playlists?limit=1')
+                    const res = await fetch('/api/spotify/playlists?limit=1', { credentials: 'include' })
                     if (res.status === 401) {
                         if (mounted) {
                             router.push('/login?next=/rank&error=spotify_expired')
@@ -117,7 +118,7 @@ export default function RankPage() {
     const fetchPlaylists = useCallback(async () => {
         setLoading(true)
         try {
-            const res = await fetch('/api/spotify/playlists')
+            const res = await fetch('/api/spotify/playlists', { credentials: 'include' })
             if (res.ok) {
                 const data = await res.json()
                 setPlaylists(data.items || [])
@@ -141,7 +142,7 @@ export default function RankPage() {
         if (!searchQuery.trim()) return
         setSearching(true)
         try {
-            const res = await fetch(`/api/spotify/albums/search?q=${encodeURIComponent(searchQuery)}`)
+            const res = await fetch(`/api/spotify/albums/search?q=${encodeURIComponent(searchQuery)}`, { credentials: 'include' })
             if (res.ok) {
                 const data = await res.json()
                 setSearchResults(data)
