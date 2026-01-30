@@ -502,7 +502,7 @@ export default function RankingFlowPage() {
                                 onClick={() => router.push('/rank')}
                                 className="flex-1 py-4 nb-button-outline"
                             >
-                                Rank Another
+                                Discard & Rank Another
                             </button>
                             <button
                                 onClick={saveRanking}
