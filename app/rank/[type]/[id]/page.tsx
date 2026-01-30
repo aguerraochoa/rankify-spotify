@@ -41,6 +41,9 @@ export default function RankingFlowPage() {
     const supabase = createClient()
 
     const name = searchParams?.get('name') || 'Untitled'
+    const [listName, setListName] = useState(name)
+    // When we reach the complete screen, default listName from URL if still fallback
+    useEffect(() => { if (isComplete && name && listName === 'Untitled') setListName(name) }, [isComplete, name])
 
     // Fetch tracks
     useEffect(() => {
@@ -340,7 +343,7 @@ export default function RankingFlowPage() {
 
             const { error } = await supabase.from('ranked_lists').insert({
                 user_id: user.id,
-                name: name,
+                name: listName,
                 source_type: params?.type ?? '',
                 source_id: params?.id ?? '',
                 songs: state.rankedList,
@@ -374,7 +377,7 @@ export default function RankingFlowPage() {
 
             const { error } = await supabase.from('ranked_lists').insert({
                 user_id: user.id,
-                name: name,
+                name: listName,
                 source_type: params?.type ?? '',
                 source_id: params?.id ?? '',
                 songs: state.rankedList,
@@ -404,7 +407,7 @@ export default function RankingFlowPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    name: `Ranked: ${name}`,
+                    name: `Ranked: ${listName}`,
                     uris,
                     description: `Ranked with Rankify on ${new Date().toLocaleDateString()}`
                 })
@@ -442,7 +445,18 @@ export default function RankingFlowPage() {
                             </svg>
                         </div>
                         <h1 className="text-3xl md:text-4xl font-black uppercase mb-2">Ranking Complete!</h1>
-                        <div className="nb-tag">{name} • {state.rankedList.length} SONGS</div>
+                        <div className="mb-4">
+                            <label htmlFor="list-name" className="block text-left font-black uppercase text-sm mb-2 text-gray-700">List name</label>
+                            <input
+                                id="list-name"
+                                type="text"
+                                value={listName}
+                                onChange={(e) => setListName(e.target.value)}
+                                placeholder="Name your ranking"
+                                className="w-full px-4 py-3 nb-input text-lg font-bold"
+                            />
+                            <p className="text-xs font-bold text-gray-600 mt-1.5">{state.rankedList.length} songs</p>
+                        </div>
                     </div>
 
                     {/* Final ranking list */}
