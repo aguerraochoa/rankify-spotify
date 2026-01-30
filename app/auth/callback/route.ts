@@ -9,11 +9,12 @@ export async function GET(request: NextRequest) {
   let next = requestUrl.searchParams.get('next')
 
   if (!next) {
-    next = request.cookies.get('sb-next-url')?.value ?? null
+    const cookieValue = request.cookies.get('sb-next-url')?.value ?? null
+    next = cookieValue ? decodeURIComponent(cookieValue) : null
   }
 
-  // Default to root if nothing found
-  const finalNext = next || '/'
+  // Default to root if nothing found; ensure path is safe (starts with /)
+  const finalNext = (next && next.startsWith('/') ? next : '/') || '/'
 
   if (code) {
     // Build the redirect response first. Session cookies MUST be set on this
@@ -38,7 +39,9 @@ export async function GET(request: NextRequest) {
                 : (options?.sameSite as 'strict' | 'lax' | 'none' | undefined)
               redirectResponse.cookies.set(name, value, {
                 ...options,
-                sameSite,
+                path: options?.path ?? '/',
+                sameSite: sameSite ?? 'lax',
+                secure: options?.secure ?? requestUrl.protocol === 'https:',
               })
             })
           },

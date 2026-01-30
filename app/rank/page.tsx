@@ -38,22 +38,21 @@ export default function RankPage() {
             authCheckPerformed = true
             
             try {
-                // After OAuth callback we land here with ?auth=success; sync session before any API calls (fixes first-load 401)
-                if (typeof window !== 'undefined') {
-                    const urlParams = new URLSearchParams(window.location.search)
-                    if (urlParams.get('auth') === 'success') {
-                        urlParams.delete('auth')
-                        const newSearch = urlParams.toString()
-                        const newPath = window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash
-                        window.history.replaceState({}, '', newPath)
-                        await supabase.auth.refreshSession()
-                    }
+                // After OAuth callback we land here with ?auth=success; sync session before any API calls
+                const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+                const isFreshAuth = urlParams?.get('auth') === 'success'
+                if (typeof window !== 'undefined' && isFreshAuth) {
+                    urlParams!.delete('auth')
+                    const newSearch = urlParams!.toString()
+                    const newPath = window.location.pathname + (newSearch ? '?' + newSearch : '') + window.location.hash
+                    window.history.replaceState({}, '', newPath)
+                    await supabase.auth.refreshSession()
                 }
 
                 // Check for session immediately
                 let { data: { session } } = await supabase.auth.getSession()
                 
-                // If no session, wait a bit for it to be available (important after OAuth callback)
+                // If no session, wait for it (important after OAuth callback)
                 if (!session) {
                     let attempts = 0
                     while (!session && attempts < 5 && mounted) {
@@ -72,14 +71,21 @@ export default function RankPage() {
                     return
                 }
 
-                // Refresh router to ensure session is synced after OAuth callback
                 router.refresh()
 
-                // Wait a bit more for session cookies to be fully synced
-                await new Promise(resolve => setTimeout(resolve, 300))
+                // After OAuth, give session cookies time to propagate before Spotify API check
+                if (isFreshAuth) {
+                    await new Promise(resolve => setTimeout(resolve, 800))
+                } else {
+                    await new Promise(resolve => setTimeout(resolve, 300))
+                }
 
-                // Verify Spotify token by attempting a lightweight fetch
-                const res = await fetch('/api/spotify/playlists?limit=1')
+                // Verify Spotify token; retry once after fresh OAuth (cookies may still be propagating)
+                let res = await fetch('/api/spotify/playlists?limit=1')
+                if (res.status === 401 && isFreshAuth && mounted) {
+                    await new Promise(resolve => setTimeout(resolve, 1000))
+                    res = await fetch('/api/spotify/playlists?limit=1')
+                }
                 if (res.status === 401) {
                     if (mounted) {
                         router.push('/login?next=/rank&error=spotify_expired')
